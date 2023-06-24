@@ -1,5 +1,5 @@
 #include<gtest/gtest.h>
-#include<serverlib/uri.hpp>
+#include<serverlib/url.hpp>
 
 #include<string>
 
@@ -7,19 +7,19 @@ TEST(URLTest, Path) {
     std::string path = "/hello/world";
     std::string query = "foo=bar&baz=qux";
 
-    URI uri = from_string(path + "?" + query);
+    URL url = from_string(path + "?" + query).value();
 
-    EXPECT_EQ(uri.GetPath(), path);
+    EXPECT_EQ(url.GetPath(), path);
 }
 
 TEST(URLTest, Query) {
     std::string path = "/hello/world";
     std::string query = "foo=bar&baz=qux";
 
-    URI uri = from_string(path + "?" + query);
+    URL url = from_string(path + "?" + query).value();
 
-    EXPECT_EQ(uri.GetQuery("foo"), "bar");
-    EXPECT_EQ(uri.GetQuery("baz"), "qux");
+    EXPECT_EQ(url.GetQuery("foo"), "bar");
+    EXPECT_EQ(url.GetQuery("baz"), "qux");
 }
 
 int main(int argc, char **argv) {

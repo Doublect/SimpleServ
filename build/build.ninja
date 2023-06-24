@@ -138,8 +138,8 @@ build src/CMakeFiles/server.dir/http.cpp.o: CXX_COMPILER__server_unscanned_Debug
   OBJECT_DIR = src/CMakeFiles/server.dir
   OBJECT_FILE_DIR = src/CMakeFiles/server.dir
 
-build src/CMakeFiles/server.dir/uri.cpp.o: CXX_COMPILER__server_unscanned_Debug /mnt/nvme0n1p4/Personal/WebServer/src/uri.cpp || cmake_object_order_depends_target_server
-  DEP_FILE = src/CMakeFiles/server.dir/uri.cpp.o.d
+build src/CMakeFiles/server.dir/url.cpp.o: CXX_COMPILER__server_unscanned_Debug /mnt/nvme0n1p4/Personal/WebServer/src/url.cpp || cmake_object_order_depends_target_server
+  DEP_FILE = src/CMakeFiles/server.dir/url.cpp.o.d
   FLAGS = -g -std=gnu++23
   OBJECT_DIR = src/CMakeFiles/server.dir
   OBJECT_FILE_DIR = src/CMakeFiles/server.dir
@@ -152,7 +152,7 @@ build src/CMakeFiles/server.dir/uri.cpp.o: CXX_COMPILER__server_unscanned_Debug 
 #############################################
 # Link the executable src/server
 
-build src/server: CXX_EXECUTABLE_LINKER__server_Debug src/CMakeFiles/server.dir/main.cpp.o src/CMakeFiles/server.dir/server.cpp.o src/CMakeFiles/server.dir/http.cpp.o src/CMakeFiles/server.dir/uri.cpp.o
+build src/server: CXX_EXECUTABLE_LINKER__server_Debug src/CMakeFiles/server.dir/main.cpp.o src/CMakeFiles/server.dir/server.cpp.o src/CMakeFiles/server.dir/http.cpp.o src/CMakeFiles/server.dir/url.cpp.o
   FLAGS = -g
   LINK_FLAGS = -rdynamic
   OBJECT_DIR = src/CMakeFiles/server.dir
@@ -191,8 +191,8 @@ build src/CMakeFiles/serverlib.dir/http.cpp.o: CXX_COMPILER__serverlib_unscanned
   OBJECT_DIR = src/CMakeFiles/serverlib.dir
   OBJECT_FILE_DIR = src/CMakeFiles/serverlib.dir
 
-build src/CMakeFiles/serverlib.dir/uri.cpp.o: CXX_COMPILER__serverlib_unscanned_Debug /mnt/nvme0n1p4/Personal/WebServer/src/uri.cpp || cmake_object_order_depends_target_serverlib
-  DEP_FILE = src/CMakeFiles/serverlib.dir/uri.cpp.o.d
+build src/CMakeFiles/serverlib.dir/url.cpp.o: CXX_COMPILER__serverlib_unscanned_Debug /mnt/nvme0n1p4/Personal/WebServer/src/url.cpp || cmake_object_order_depends_target_serverlib
+  DEP_FILE = src/CMakeFiles/serverlib.dir/url.cpp.o.d
   FLAGS = -g -std=gnu++23
   INCLUDES = -I/mnt/nvme0n1p4/Personal/WebServer/src/include
   OBJECT_DIR = src/CMakeFiles/serverlib.dir
@@ -206,7 +206,7 @@ build src/CMakeFiles/serverlib.dir/uri.cpp.o: CXX_COMPILER__serverlib_unscanned_
 #############################################
 # Link the static library src/libserverlib.a
 
-build src/libserverlib.a: CXX_STATIC_LIBRARY_LINKER__serverlib_Debug src/CMakeFiles/serverlib.dir/main.cpp.o src/CMakeFiles/serverlib.dir/server.cpp.o src/CMakeFiles/serverlib.dir/http.cpp.o src/CMakeFiles/serverlib.dir/uri.cpp.o
+build src/libserverlib.a: CXX_STATIC_LIBRARY_LINKER__serverlib_Debug src/CMakeFiles/serverlib.dir/main.cpp.o src/CMakeFiles/serverlib.dir/server.cpp.o src/CMakeFiles/serverlib.dir/http.cpp.o src/CMakeFiles/serverlib.dir/url.cpp.o
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = src/CMakeFiles/serverlib.dir
   POST_BUILD = :

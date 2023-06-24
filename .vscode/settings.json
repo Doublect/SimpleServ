@@ -94,5 +94,8 @@
         "strstream": "cpp",
         "*.ipp": "cpp"
     },
-    "C_Cpp.default.compileCommands": "builddir/vscode_compile_commands.json"
+    "C_Cpp.default.compileCommands": "builddir/vscode_compile_commands.json",
+    "C_Cpp.default.cppStandard": "gnu++23",
+    "cmake.configureOnOpen": true,
+    "C_Cpp.errorSquiggles": "enabled"
 }

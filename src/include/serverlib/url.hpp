@@ -1,16 +1,18 @@
 #ifndef URL_HPP
 #define URL_HPP
 
+#include <expected>
 #include <string>
 #include <map>
+#include <memory>
 
-class URI {
+class URL {
     std::string path;
     std::map<std::string, std::string> query;
 
     public:
-        URI(std::string path, std::map<std::string, std::string> query) : path(path), query(query) {}
-
+        URL(std::string path, std::map<std::string, std::string> query) : path(path), query(query) {}
+        ~URL() {}
         std::string GetPath() {
             return path;
         }
@@ -24,6 +26,6 @@ class URI {
         }
 };
 
-URI from_string(std::string str);
+auto from_string(std::string str) -> std::expected<URL, std::string>;
 
 #endif

@@ -1,4 +1,4 @@
-#include "include/serverlib/uri.hpp"
+#include "include/serverlib/url.hpp"
 
 std::string path(std::string str) {
     int query_index = str.find("?");
@@ -35,9 +35,9 @@ std::map<std::string, std::string> searchpart(std::string str, size_t start) {
     return query;
 }
 
-URI from_string(std::string str) {
+auto from_string(std::string str) -> std::expected<URL, std::string> {
     std::string path_str = path(str);
     std::map<std::string, std::string> query = searchpart(str, path_str.length() + 1);
 
-    return URI(path_str, query);
+    return URL(path_str, query);
 }

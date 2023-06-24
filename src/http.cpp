@@ -98,11 +98,11 @@ HTTPRequest string_to_request(std::string& str) {
     int method_end = str.find(" ");
     std::string method_str = str.substr(0, method_end);
 
-    int uri_end = str.find(" ", method_end + 1);
-    std::string path = str.substr(method_end + 1, uri_end - method_end - 1);
+    int url_end = str.find(" ", method_end + 1);
+    std::string path = str.substr(method_end + 1, url_end - method_end - 1);
 
-    int version_end = str.find("\r\n", uri_end + 1);
-    std::string version_str = str.substr(uri_end + 1, version_end - uri_end - 1);
+    int version_end = str.find("\r\n", url_end + 1);
+    std::string version_str = str.substr(url_end + 1, version_end - url_end - 1);
 
     HTTPRequest request {
         method_string_to_enum(method_str),
