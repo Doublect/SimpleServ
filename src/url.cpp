@@ -41,3 +41,59 @@ auto from_string(std::string str) -> std::expected<URL, std::string> {
 
     return URL(path_str, query);
 }
+
+std::string percent_decode(std::string str) {
+    std::string decoded = "";
+
+    for(int i = 0; i < str.length(); i++) {
+        if(str[i] == '%') {
+            std::string hex = str.substr(i + 1, 2);
+            int char_code = std::stoi(hex, nullptr, 16);
+            decoded += (char) char_code;
+            i += 2;
+        } else {
+            decoded += str[i];
+        }
+    }
+
+    return decoded;
+}
+
+std::string percent_encode(std::string str) {
+    std::string encoded = "";
+
+    for(int i = 0; i < str.length(); i++) {
+        switch(str[i]) {
+            case(' '):
+            case('!'):
+            case('"'):
+            case('#'):
+            case('$'):
+            case('%'):
+            case('&'):
+            case('\''):
+            case('('):
+            case(')'):
+            case('*'):
+            case('+'):
+            case(','):
+            case('/'):
+            case(':'):
+            case(';'):
+            case('='):
+            case('?'):
+            case('@'):
+            case('['):
+            case(']'):
+            //case('的'):
+                encoded += "%" + std::to_string((int) str[i]);
+                break;
+
+            default:
+                encoded += str[i];
+                break;
+        }
+    }
+
+    return encoded;
+}

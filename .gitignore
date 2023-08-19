@@ -50,3 +50,6 @@ _deps
 *-prefix/
 build/.ninja_log
 build/.ninja_deps
+
+
+.idea

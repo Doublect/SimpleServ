@@ -2,6 +2,7 @@
 
 #include <bits/stdc++.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -10,6 +11,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <csignal>
 #include <string>
 #include <string_view>
 
@@ -17,8 +19,16 @@ struct sockaddr_storage their_addr;
 struct addrinfo hints, *res;
 int sockfd;
 
+
 #define BACKLOG 10
 #define MAXBUFLEN 1024
+
+void signal_handler(int signum) {
+    std::cout << "Signal received: " << signum << std::endl;
+    std::cout << "Closing socket..." << std::endl;
+    close(sockfd);
+    exit(signum);
+}
 
 void HTTPServer::setup() {
     memset(&hints, 0, sizeof(hints));
@@ -37,8 +47,15 @@ void HTTPServer::setup() {
     }
 
     // bind it to the port we passed in to getaddrinfo()
-    bind(sockfd, res->ai_addr, res->ai_addrlen);
-    listen(sockfd, MAXBUFLEN);
+    if(bind(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
+        std::cout << "Error binding socket" << std::endl;
+        exit(1);
+    }
+
+    if(listen(sockfd, MAXBUFLEN) == -1) {
+        std::cout << "Error listening on socket" << std::endl;
+        exit(1);
+    }
 }
 
 void HTTPServer::accept_incoming() {
@@ -61,21 +78,37 @@ void HTTPServer::receive_connection() {
 
 void HTTPServer::receive_http(int client_fd) {
     char buf[MAXBUFLEN];
-    int numbytes = recv(client_fd, buf, MAXBUFLEN - 1, 0);
+    int numbytes;
+
+    do {
+        numbytes = recv(client_fd, buf, MAXBUFLEN - 1, 0);
+    } while(numbytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK));
+
+    if(numbytes == -1) {
+        fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
+        return;
+    }
     buf[numbytes] = '\0';
 
         //"""GET / HTTP/1.1\r\nHost: localhost:5122\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/2\r\n\r\nHELLO WORLD"""
     std::string request_str {buf};
-    HTTPRequest request = string_to_request(request_str);
-    std::cout << "Orignal HTTP request:" << std::endl;
-    std::cout << request_str << std::endl;
+    std::cout << "Received HTTP request: " << numbytes << std::endl;
+    auto result = parse_http_request(request_str);
 
-    // Should basically be an echo
-    std::cout << "Processed HTTP request:" << std::endl;
-    std::cout << request_to_string(request) << std::endl;
+    if(!result) {
+        std::cout << "Error parsing HTTP request" << std::endl;
+        return;
+    }
+
+    auto request = result.value();
 
     send_html(client_fd, request);
 }
+
+// struct {
+//     int32_t gmt_unix_time;
+//     opaque random_bytes[28];
+// } Random;
 
 constexpr bool is_html(std::string_view str) {
     // TODO: check why ends_with is not working
@@ -151,7 +184,7 @@ void HTTPServer::send_html(int client_fd, HTTPRequest request) {
             response.SetHeader("Content-Type", "text/plain");
         }
 
-        std::string path = "webdir" + remove_query(request.path());
+        std::string path = "../webdir" + remove_query(request.path());
 
         std::ifstream file(path);
         file.open(path, std::ios::in);

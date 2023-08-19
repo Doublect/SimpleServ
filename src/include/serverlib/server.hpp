@@ -2,6 +2,9 @@
 #define SERVER_HPP
 
 #include "http.hpp"
+#include "parser.hpp"
+
+void signal_handler(int signal);
 
 class HTTPServer {
     private: 
