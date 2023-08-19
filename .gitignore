@@ -53,3 +53,5 @@ build/.ninja_deps
 
 
 .idea
+webdir/
+server
