@@ -3,57 +3,108 @@
 
 #include<string>
 
-TEST(ParserTest, ParseMessageHeader) {
-    std::string header = "Content-Type: text/html\r\n";
+template<typename T, typename E>
+inline T success(std::expected<T, E> result) {
+    EXPECT_TRUE(result.has_value());
+    return result.value();
+}
 
-    auto result = std::get<0>(parse_message_headers(header));
-    std::cout << "Result: " << result.size() << std::endl;
-    for(auto& [key, value] : result) {
+#define EXPECT_SUCCESS(result) EXPECT_TRUE(result.has_value())
+#define EXPECT_FAILURE(result) EXPECT_FALSE(result.has_value())
+
+TEST(ParserTest, ParseMessageHeader) {
+    std::string input = "Content-Type: text/html\r\n\r\n";
+ 
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
+
+    auto headers = std::get<0>(result.value());
+    std::cout << "Result: " << headers.size() << std::endl;
+    for(auto& [key, value] : headers) {
         std::cout << key << " " << value << std::endl;
     }
-    EXPECT_EQ(result["Content-Type"], "text/html");
+    EXPECT_EQ(headers["Content-Type"], "text/html");
 }
 
 TEST(ParserTest, ParseMessageHeaders) {
-    std::string headers = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n";
+    std::string input = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n";
 
-    auto result = std::get<0>(parse_message_headers(headers));
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-    EXPECT_EQ(result["Content-Type"], "text/html");
-    EXPECT_EQ(result["Content-Length"], "100");
+    auto headers = std::get<0>(result.value());
+
+    EXPECT_EQ(headers["Content-Type"], "text/html");
+    EXPECT_EQ(headers["Content-Length"], "100");
 }
 
 TEST(ParserTest, ParseMessageHeadersWithBody) {
-    std::string headers = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>";
+    std::string input = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>";
 
-    auto result = std::get<0>(parse_message_headers(headers));
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-    EXPECT_EQ(result["Content-Type"], "text/html");
-    EXPECT_EQ(result["Content-Length"], "100");
+    auto headers = std::get<0>(result.value());
+
+    EXPECT_EQ(headers["Content-Type"], "text/html");
+    EXPECT_EQ(headers["Content-Length"], "100");
 }
 
 TEST(ParserTest, ParseMessageHeadersWithBodyAndExtra) {
-    std::string headers = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>\r\n\r\n";
+    std::string input = "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>\r\n\r\n";
 
-    auto result = std::get<0>(parse_message_headers(headers));
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-    EXPECT_EQ(result["Content-Type"], "text/html");
-    EXPECT_EQ(result["Content-Length"], "100");
+    auto headers = std::get<0>(result.value());
+
+    EXPECT_EQ(headers["Content-Type"], "text/html");
+    EXPECT_EQ(headers["Content-Length"], "100");
 }
 
 TEST(ParserTest, MalformedMessageHeaders) {
-    std::string headers = "\r\nContent-Type: text/html\r\n";
+    std::string input = "\r\nContent-Type: text/html\r\n";
 
-    auto result = std::get<0>(parse_message_headers(headers));
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-    EXPECT_EQ(result.find("Content-Type"), result.end());
-    EXPECT_EQ(result.size(), 0);
+    auto headers = std::get<0>(result.value());
+
+    EXPECT_EQ(headers.find("Content-Type"), headers.end());
+    EXPECT_EQ(headers.size(), 0);
+}
+
+TEST(ParserTest, NoHeaders) {
+    std::string input = "\r\n";
+
+    auto result = parse_message_headers(input);
+    EXPECT_SUCCESS(result);
+    if(!result.has_value()) {
+        return;
+    }
+
+    auto headers = std::get<0>(result.value());
+    EXPECT_EQ(headers.size(), 0);
 }
 
 TEST(ParserTest, EmptyInput) {
-    std::string headers = "";
+    std::string input = "";
 
-    auto result = std::get<0>(parse_message_headers(headers));
-
-    EXPECT_EQ(result.size(), 0);
+    auto result = parse_message_headers(input);
+    EXPECT_FAILURE(result);
 }

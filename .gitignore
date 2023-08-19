@@ -54,4 +54,7 @@ build/.ninja_deps
 
 .idea
 webdir/
+
+
 server
+unit_tests
