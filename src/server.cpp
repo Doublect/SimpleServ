@@ -239,7 +239,7 @@ constexpr bool is_png(std::string_view str) {
 }
 
 constexpr bool is_extension(std::string_view str, std::string_view extension) {
-	int len = extension.length();
+	size_t len = extension.length();
 
 	if (str.length() < len)
 		return false;
@@ -260,7 +260,7 @@ constexpr bool is_supported_extension(std::string_view str) {
 }
 
 constexpr std::string remove_query(std::string str) {
-	int query_index = str.find("?");
+	size_t query_index = str.find("?");
 	if (query_index != std::string::npos) {
 		return str.substr(0, query_index);
 	}

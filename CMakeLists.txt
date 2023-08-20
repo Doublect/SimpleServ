@@ -40,7 +40,7 @@ add_subdirectory(tests)
 # add_executable(example ${sources} ${data})
 
 # # just for example add some compiler flags
-# target_compile_options(example PUBLIC -std=c++23c -Wall -Wfloat-conversion)
+target_compile_options(serverlib PUBLIC -Wall -Wfloat-conversion)
 
 # # this lets me include files relative to the root source directory with a <> pair
 # target_include_directories(example PUBLIC src/main)

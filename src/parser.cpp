@@ -99,7 +99,7 @@ std::expected<HTTPRequest, parser_error> parse_http_request(std::string str) {
 	auto [headers, restb] = headers_result.value();
 
 	for (auto &[key, value] : headers) {
-		request.SetHeader(std::move(std::string(key)), std::string(value));
+		request.SetHeader(std::string(key), std::string(value));
 	}
 
 	request.SetContent(std::string{restb});
