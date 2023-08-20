@@ -1,12 +1,3 @@
-# include(FetchContent)
-# FetchContent_Declare(
-#   wolfssl
-#   GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
-#   GIT_TAG        "v5.6.3-stable"
-# )
-
-# FetchContent_MakeAvailable(wolfssl)
-
 find_path(WOLFSSL_INCLUDE_DIR NAMES wolfssl/ssl.h PATHS /usr/include)
 find_library(WOLFSSL_LIBRARY NAMES libwolfssl.so PATHS /usr/lib)
 if (WOLFSSL_INCLUDE_DIR)

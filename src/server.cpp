@@ -16,43 +16,37 @@
 #include <string>
 #include <string_view>
 
-struct sockaddr_storage their_addr;
-struct addrinfo hints, *res;
-struct addrinfo tls_hints, *tls_res;
-int sockfd, tls_sockfd;
-
-WOLFSSL_CTX *ctx;
-WOLFSSL *ssl;
-
 #define BACKLOG 10
 #define MAXBUFLEN 4096
 
-#define HTTP_PORT "80"
-#define HTTPS_PORT "443"
-
-void signal_handler(int signum) {
-  std::cout << "Signal received: " << signum << std::endl;
-  std::cout << "Closing socket..." << std::endl;
+void HTTPServer::close_connection() {
+  close(client_fd);
   close(sockfd);
-  exit(signum);
-  wolfSSL_CTX_free(ctx);
-  wolfSSL_Cleanup();
 }
 
-void HTTPServer::close_connection() {
+void HTTPSServer::close_connection() {
   close(client_fd);
   close(sockfd);
   wolfSSL_CTX_free(ctx);
   wolfSSL_Cleanup();
 }
 
-void HTTPServer::setup() {
+void HTTPServer::startup() {
+  setup(port.c_str());
+}
+
+void HTTPSServer::startup() {
+  setup(port.c_str());
+  load_tls();
+}
+
+void Server::setup(const char *port) {
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM; // TCP
   hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
-  getaddrinfo(NULL, HTTP_PORT, &hints, &res);
+  getaddrinfo(NULL, port, &hints, &res);
 
   // make a socket
   sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -74,36 +68,7 @@ void HTTPServer::setup() {
   }
 }
 
-void HTTPServer::setup_tls() {
-  memset(&tls_hints, 0, sizeof(tls_hints));
-  tls_hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
-  tls_hints.ai_socktype = SOCK_STREAM; // TCP
-  tls_hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-
-  getaddrinfo(NULL, HTTPS_PORT, &tls_hints, &tls_res);
-
-  // make a socket
-  tls_sockfd =
-      socket(tls_res->ai_family, tls_res->ai_socktype, tls_res->ai_protocol);
-
-  if (tls_sockfd == -1) {
-    std::cout << "Error creating socket" << std::endl;
-    exit(1);
-  }
-
-  // bind it to the port we passed in to getaddrinfo()
-  if (bind(tls_sockfd, tls_res->ai_addr, tls_res->ai_addrlen) == -1) {
-    std::cout << "Error binding socket" << std::endl;
-    exit(1);
-  }
-
-  if (listen(tls_sockfd, MAXBUFLEN) == -1) {
-    std::cout << "Error listening on socket" << std::endl;
-    exit(1);
-  }
-}
-
-void HTTPServer::load_tls() {
+void HTTPSServer::load_tls() {
   wolfSSL_Init();
 
   if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_server_method())) == NULL) {
@@ -147,24 +112,31 @@ void HTTPServer::receive_connection() {
   socklen_t addr_size = sizeof(their_addr);
 
   while (true) {
-    std::cout << "Waiting for connection..." << std::endl;
-    // client_fd = accept4(sockfd, (struct sockaddr *)&their_addr, &addr_size,
-    //                     SOCK_NONBLOCK);
-    // if(!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
-    //   std::cout << "Got connection. Receiving HTTP" << std::endl;
-    //   receive_http(client_fd);
-    // }
-
-    client_fd = accept4(tls_sockfd, (struct sockaddr *)&their_addr, &addr_size,
+    std::cout << "Waiting for HTTP connection..." << std::endl;
+    client_fd = accept4(sockfd, (struct sockaddr *)&their_addr, &addr_size,
                         SOCK_NONBLOCK);
-    if (!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
-      std::cout << "Got connection. Receiving TLS" << std::endl;
-      receive_tls(client_fd);
+    if(!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
+      std::cout << "Got connection. Receiving HTTP" << std::endl;
+      receive(client_fd);
     }
   }
 }
 
-void HTTPServer::receive_http(int client_fd) {
+void HTTPSServer::receive_connection() {
+  socklen_t addr_size = sizeof(their_addr);
+
+  while (true) {
+    std::cout << "Waiting for HTTPS connection..." << std::endl;
+    client_fd = accept4(sockfd, (struct sockaddr *)&their_addr, &addr_size,
+                        SOCK_NONBLOCK);
+    if (!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
+      std::cout << "Got connection. Receiving TLS" << std::endl;
+      receive(client_fd);
+    }
+  }
+}
+
+void HTTPServer::receive(int client_fd) {
   char buf[MAXBUFLEN];
   int numbytes;
 
@@ -178,8 +150,6 @@ void HTTPServer::receive_http(int client_fd) {
   }
   buf[numbytes] = '\0';
 
-  //"""GET / HTTP/1.1\r\nHost: localhost:5122\r\nUser-Agent: Mozilla/5.0 (X11;
-  // Linux x86_64; rv:109.0) Gecko/2\r\n\r\nHELLO WORLD"""
   std::string request_str{buf};
   std::cout << "Received HTTP request: " << numbytes << std::endl;
   auto result = parse_http_request(request_str);
@@ -194,7 +164,7 @@ void HTTPServer::receive_http(int client_fd) {
   send_html(client_fd, prepare_response(request));
 }
 
-void HTTPServer::receive_tls(int client_fd) {
+void HTTPSServer::receive(int client_fd) {
   char buf[MAXBUFLEN];
   int numbytes;
   int ret;
@@ -233,7 +203,7 @@ void HTTPServer::receive_tls(int client_fd) {
 
     auto request = result.value();
 
-    send_html_tls(ssl, prepare_response(request));
+    send_html(ssl, HTTPServer::prepare_response(request));
   }
 }
 
@@ -352,7 +322,7 @@ void HTTPServer::send_html(int client_fd, HTTPResponse response) {
   close(client_fd);
 }
 
-void HTTPServer::send_html_tls(WOLFSSL *ssl, HTTPResponse response) {
+void HTTPSServer::send_html(WOLFSSL *ssl, HTTPResponse response) {
   std::string response_str = response_to_string(response);
   int ret, err;
   do {

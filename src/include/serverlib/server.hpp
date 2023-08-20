@@ -8,24 +8,56 @@
 
 void signal_handler(int signal);
 
-class HTTPServer {
+#define HTTP_PORT "80"
+#define HTTPS_PORT "443"
+
+class Server {
+    protected:
+        std::string port;
+        struct addrinfo hints, *res;
+        struct sockaddr_storage their_addr;
+        int sockfd;
+
+        char *get_port() { return (char *)port.c_str(); };
+        void setup(const char *port);
+};
+
+class HTTPServer : public Server {
     private: 
         int client_fd;
 
     public:
-        HTTPServer() {}
+        HTTPServer() {
+            this->port = HTTP_PORT;
+        }
         ~HTTPServer() { close_connection(); }
 
-        void setup();
-        void setup_tls();
+        void startup();
         void accept_incoming();
+        void receive_connection();
+        void receive(int client_fd);
+        static HTTPResponse prepare_response(HTTPRequest request);
+        void send_html(int client_fd, HTTPResponse response);
+        void close_connection();
+};
+
+class HTTPSServer : public Server {
+    private: 
+        int client_fd;
+        WOLFSSL_CTX *ctx;
+        WOLFSSL *ssl;
+    
+    public:
+        HTTPSServer() {
+            this->port = HTTPS_PORT;
+        }
+        ~HTTPSServer() { close_connection(); }
+
+        void startup();
         void load_tls();
         void receive_connection();
-        void receive_http(int client_fd);
-        void receive_tls(int client_fd);
-        HTTPResponse prepare_response(HTTPRequest request);
-        void send_html(int client_fd, HTTPResponse response);
-        void send_html_tls(WOLFSSL* ssl, HTTPResponse response);
+        void receive(int client_fd);
+        void send_html(WOLFSSL* ssl, HTTPResponse response);
         void close_connection();
 };
 

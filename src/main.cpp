@@ -1,23 +1,47 @@
+#define WOLFSSL_USER_SETTINGS
+#include <wolfssl/wolfcrypt/settings.h>
+
 #include "include/serverlib/server.hpp"
 
+#include <condition_variable>
 #include <csignal>
 #include <iostream>
+#include <thread>
+
+HTTPServer server;
+HTTPSServer ssl_server;
+
+std::condition_variable exit_signal;
+std::mutex exit_mutex;
 
 int main() {
-    HTTPServer server;
 
-    signal(SIGINT, signal_handler);
-    signal(SIGABRT, signal_handler);
-    signal(SIGTERM, signal_handler);
+  signal(SIGINT, signal_handler);
+  signal(SIGABRT, signal_handler);
+  signal(SIGTERM, signal_handler);
 
-    std::cout << "Starting server..." << std::endl;
-    server.setup();
-    server.setup_tls();
-    server.load_tls();
-    std::cout << "Server started." << std::endl;
-    server.accept_incoming();
-    std::cout << "Connection accepting setup." << std::endl;
-    server.receive_connection();
+  std::cout << "Starting HTTP server..." << std::endl;
+  server.startup();
+  std::cout << "Server ready." << std::endl;
+  std::cout << "Starting HTTPS server..." << std::endl;
+  ssl_server.startup();
+  std::cout << "Server ready." << std::endl;
 
-    return 0;
+  std::thread http_thread(&HTTPServer::receive_connection, &server);
+  std::thread https_thread(&HTTPSServer::receive_connection, &ssl_server);
+
+  std::unique_lock<std::mutex> lock(exit_mutex);
+  exit_signal.wait(lock);
+
+  return 0;
+}
+
+void signal_handler(int signum) {
+  std::cout << "Signal received: " << signum << std::endl;
+  std::cout << "Closing socket..." << std::endl;
+  server.close_connection();
+  ssl_server.close_connection();
+  std::cout << "Sockets closed." << std::endl;
+  exit_signal.notify_one();
+  exit(signum);
 }
