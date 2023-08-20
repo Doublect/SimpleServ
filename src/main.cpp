@@ -12,6 +12,8 @@ int main() {
 
     std::cout << "Starting server..." << std::endl;
     server.setup();
+    server.setup_tls();
+    server.load_tls();
     std::cout << "Server started." << std::endl;
     server.accept_incoming();
     std::cout << "Connection accepting setup." << std::endl;

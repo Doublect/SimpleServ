@@ -53,8 +53,9 @@ build/.ninja_deps
 
 
 .idea
-webdir/
 
+webdir/
+certs/
 
 server
 unit_tests
