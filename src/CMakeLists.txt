@@ -18,7 +18,7 @@ endif()
 
 find_package(WolfSSL REQUIRED)
 
-add_library(serverlib parser.cpp server.cpp http.cpp url.cpp)
+add_library(serverlib parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
 target_include_directories(serverlib PUBLIC include)
 
 target_link_libraries(serverlib PRIVATE WolfSSL::WolfSSL)
