@@ -11,7 +11,7 @@ class URL {
 	std::map<std::string, std::string> query;
 
 	public:
-		URL(std::string path, std::map<std::string, std::string> query) : path(path), query(query) {}
+		URL(std::string url_path, std::map<std::string, std::string> query_params) : path(url_path), query(query_params) {}
 		~URL() {}
 		std::string GetPath() {
 			return path;

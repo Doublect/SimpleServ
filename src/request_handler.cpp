@@ -22,7 +22,7 @@ HTTPResponse options_request(const HTTPRequest &request) {
 
 class IGETRequestHandler {
 public:
-	virtual GETResult get(std::string key, GETConditionals conditionals) = 0;
+	virtual GETResult get(std::string path, GETConditionals conditionals) = 0;
 };
 
 template <typename K, typename V>
@@ -38,7 +38,7 @@ template <GETRequestHandler T>
 HTTPResponse get_request(const HTTPRequest &request) {
 	T handler;
 
-	std::string key = request.path();
+	std::string path = request.path();
 	const auto headers = request.headers();
 	GETConditionals conditionals;
 	conditionals.modified_since = find_if_exists(headers, "If-Modified-Since"s);
@@ -46,7 +46,7 @@ HTTPResponse get_request(const HTTPRequest &request) {
 	conditionals.match = find_if_exists(headers, "If-Match"s);
 	conditionals.none_match = find_if_exists(headers, "If-None-Match"s);
 
-	GETResult result = handler.get(key, conditionals);
+	GETResult result = handler.get(path, conditionals);
 
 	HTTPResponse response;
 	switch (result.state) {
@@ -70,16 +70,16 @@ HTTPResponse get_request(const HTTPRequest &request) {
 
 class IHEADRequestHandler {
 public:
-	virtual std::map<std::string, std::string> head(std::string key) = 0;
+	virtual std::map<std::string, std::string> head(std::string path) = 0;
 };
 
 template <HEADRequestHandler T>
 HTTPResponse head_request(const HTTPRequest &request) {
 	T handler;
 
-	std::string key = request.path();
+	std::string path = request.path();
 
-	std::map<std::string, std::string> result = handler.head(key);
+	std::map<std::string, std::string> result = handler.head(path);
 
 	HTTPResponse response(HTTPStatusCode::OK, HTTP_1_1);
 	for (auto const &[key, val] : result) {
@@ -96,7 +96,7 @@ struct POSTResult {
 
 class IPOSTRequestHandler {
 public:
-	virtual POSTResult post(std::string key, std::string value) = 0;
+	virtual POSTResult post(std::string path, std::string value) = 0;
 };
 
 /*
@@ -106,10 +106,10 @@ template <POSTRequestHandler T>
 HTTPResponse post_request(const HTTPRequest &request) {
 	T handler;
 
-	std::string key = request.path();
+	std::string path = request.path();
 	std::string value = request.body();
 
-	POSTResult result = handler.post(key, value);
+	POSTResult result = handler.post(path, value);
 
 	HTTPResponse response;
 	switch (result.state) {
@@ -137,7 +137,7 @@ HTTPResponse post_request(const HTTPRequest &request) {
 
 class IPUTRequestHandler {
 public:
-	virtual PUTResult put(std::string key, std::string value) = 0;
+	virtual PUTResult put(std::string path, std::string value) = 0;
 };
 
 /*
@@ -147,10 +147,10 @@ template <PUTRequestHandler T>
 HTTPResponse put_request(const HTTPRequest &request) {
 	T handler;
 
-	std::string key = request.path();
+	std::string path = request.path();
 	std::string value = request.body();
 
-	PUTResult result = handler.put(key, value);
+	PUTResult result = handler.put(path, value);
 
 	HTTPResponse response;
 	switch (result) {
@@ -176,7 +176,7 @@ HTTPResponse put_request(const HTTPRequest &request) {
 
 class IDELETERequestHandler {
 public:
-	virtual DELETEResult del(std::string key) = 0;
+	virtual DELETEResult del(std::string path) = 0;
 };
 
 /*
@@ -186,9 +186,9 @@ template <DELETERequestHandler T>
 HTTPResponse delete_request(const HTTPRequest &request) {
 	T handler;
 
-	std::string key = request.path();
+	std::string path = request.path();
 
-	DELETEResult result = handler.del(key);
+	DELETEResult result = handler.del(path);
 
 	HTTPResponse response;
 	switch (result) {

@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <expected>
 #include <iostream>
-#include <string>
 #include <map>
+#include <string>
 
 static std::string HTTP_RESPONSE_STATUS[] = {
 	"200 OK",

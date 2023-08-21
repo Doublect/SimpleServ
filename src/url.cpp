@@ -1,6 +1,6 @@
 #include "include/serverlib/url.hpp"
 
-std::string path(std::string str) {
+inline std::string path(std::string str) {
 	size_t query_index = str.find("?");
 	if (query_index != std::string::npos) {
 		return str.substr(0, query_index);
@@ -9,7 +9,7 @@ std::string path(std::string str) {
 	return str;
 }
 
-std::map<std::string, std::string> searchpart(std::string str, size_t start) {
+inline std::map<std::string, std::string> searchpart(std::string str, size_t start) {
 	std::map<std::string, std::string> query;
 
 	size_t query_index = start;
@@ -43,14 +43,14 @@ auto from_string(std::string str) -> std::expected<URL, std::string> {
 	return URL(path_str, query);
 }
 
-std::string percent_decode(std::string str) {
+inline std::string percent_decode(std::string str) {
 	std::string decoded = "";
 
 	for (size_t i = 0; i < str.length(); i++) {
 		if (str[i] == '%') {
 			std::string hex = str.substr(i + 1, 2);
 			int char_code = std::stoi(hex, nullptr, 16);
-			decoded += (char)char_code;
+			decoded += static_cast<char>(char_code);
 			i += 2;
 		} else {
 			decoded += str[i];
@@ -60,7 +60,7 @@ std::string percent_decode(std::string str) {
 	return decoded;
 }
 
-std::string percent_encode(std::string str) {
+inline std::string percent_encode(std::string str) {
 	std::string encoded = "";
 
 	for (size_t i = 0; i < str.length(); i++) {
@@ -87,7 +87,7 @@ std::string percent_encode(std::string str) {
 		case ('['):
 		case (']'):
 			// case('的'):
-			encoded += "%" + std::to_string((int)str[i]);
+			encoded += "%" + std::to_string(static_cast<int>(str[i]));
 			break;
 
 		default:

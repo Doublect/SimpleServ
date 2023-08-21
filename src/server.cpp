@@ -13,6 +13,7 @@
 #include <wolfssl/ssl.h>
 
 #include <csignal>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -31,22 +32,20 @@ void HTTPSServer::close_connection() {
 	wolfSSL_Cleanup();
 }
 
-void HTTPServer::startup() {
-	setup(port.c_str());
-}
+void HTTPServer::startup() { setup(); }
 
 void HTTPSServer::startup() {
-	setup(port.c_str());
+	setup();
 	load_tls();
 }
 
-void Server::setup(const char *port) {
+void Server::setup() {
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
 	hints.ai_socktype = SOCK_STREAM; // TCP
 	hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
-	getaddrinfo(NULL, port, &hints, &res);
+	getaddrinfo(NULL, port.c_str(), &hints, &res);
 
 	// make a socket
 	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -108,41 +107,27 @@ void HTTPServer::accept_incoming() {
 	// int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
 }
 
-void HTTPServer::receive_connection() {
+[[noreturn]] void Server::receive_connection() {
 	socklen_t addr_size = sizeof(their_addr);
 
 	while (true) {
-		std::cout << "Waiting for HTTP connection..." << std::endl;
-		client_fd = accept4(sockfd, (struct sockaddr *)&their_addr, &addr_size,
-												SOCK_NONBLOCK);
-		if(!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
-			std::cout << "Got connection. Receiving HTTP" << std::endl;
-			receive(client_fd);
-		}
-	}
-}
-
-void HTTPSServer::receive_connection() {
-	socklen_t addr_size = sizeof(their_addr);
-
-	while (true) {
-		std::cout << "Waiting for HTTPS connection..." << std::endl;
-		client_fd = accept4(sockfd, (struct sockaddr *)&their_addr, &addr_size,
-												SOCK_NONBLOCK);
-		if (!(client_fd == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))) {
+		std::cout << "Waiting for connection..." << std::endl;
+		client_fd = accept4(sockfd, reinterpret_cast<sockaddr *>(&their_addr),
+												&addr_size, SOCK_NONBLOCK);
+		if (!(client_fd == -1 && (errno == EAGAIN))) {
 			std::cout << "Got connection. Receiving TLS" << std::endl;
-			receive(client_fd);
+			receive();
 		}
 	}
 }
 
-void HTTPServer::receive(int client_fd) {
+void HTTPServer::receive() {
 	char buf[MAXBUFLEN];
-	int numbytes;
+	ssize_t numbytes;
 
 	do {
 		numbytes = recv(client_fd, buf, MAXBUFLEN - 1, 0);
-	} while (numbytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK));
+	} while (numbytes == -1 && (errno == EAGAIN));
 
 	if (numbytes == -1) {
 		fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
@@ -161,10 +146,10 @@ void HTTPServer::receive(int client_fd) {
 
 	auto request = result.value();
 
-	send_html(client_fd, prepare_response(request));
+	send_html(prepare_response(request));
 }
 
-void HTTPSServer::receive(int client_fd) {
+void HTTPSServer::receive() {
 	char buf[MAXBUFLEN];
 	int numbytes;
 	int ret;
@@ -203,39 +188,15 @@ void HTTPSServer::receive(int client_fd) {
 
 		auto request = result.value();
 
-		send_html(ssl, HTTPServer::prepare_response(request));
+		send_html(HTTPServer::prepare_response(request));
 	}
 }
-
-// struct {
-//     int32_t gmt_unix_time;
-//     opaque random_bytes[28];
-// } Random;
 
 constexpr bool is_html(std::string_view str) {
 	// TODO: check why ends_with is not working
 	if (str.length() < 5)
 		return false;
 	return str.substr(str.length() - 5, 5) == ".html";
-}
-
-constexpr bool is_js(std::string_view str) {
-	// TODO: check why ends_with is not working
-	if (str.length() < 3)
-		return false;
-	return str.substr(str.length() - 3, 3) == ".js";
-}
-
-constexpr bool is_css(std::string_view str) {
-	if (str.length() < 4)
-		return false;
-	return str.substr(str.length() - 4, 4) == ".css";
-}
-
-constexpr bool is_png(std::string_view str) {
-	if (str.length() < 4)
-		return false;
-	return str.substr(str.length() - 4, 4) == ".png";
 }
 
 constexpr bool is_extension(std::string_view str, std::string_view extension) {
@@ -315,18 +276,19 @@ HTTPResponse HTTPServer::prepare_response(HTTPRequest request) {
 	return response;
 }
 
-void HTTPServer::send_html(int client_fd, HTTPResponse response) {
+void HTTPServer::send_html(HTTPResponse response) {
 	std::string response_str = response_to_string(response);
 
 	send(client_fd, response_str.c_str(), response_str.length(), 0);
 	close(client_fd);
 }
 
-void HTTPSServer::send_html(WOLFSSL *ssl, HTTPResponse response) {
+void HTTPSServer::send_html(HTTPResponse response) {
 	std::string response_str = response_to_string(response);
 	int ret, err;
 	do {
-		ret = wolfSSL_write(ssl, response_str.c_str(), response_str.length());
+		ret = wolfSSL_write(ssl, response_str.c_str(),
+												static_cast<int>(response_str.length()));
 		err = wolfSSL_get_error(ssl, ret);
 	} while (err == WOLFSSL_ERROR_WANT_WRITE);
 	wolfSSL_shutdown(ssl);

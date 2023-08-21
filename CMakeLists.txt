@@ -40,7 +40,95 @@ add_subdirectory(tests)
 # add_executable(example ${sources} ${data})
 
 # # just for example add some compiler flags
-target_compile_options(serverlib PUBLIC -Wall -Wfloat-conversion)
+target_compile_options(serverlib PUBLIC -Wfloat-conversion
+-Wall
+-Wextra
+-Wpedantic
+-Wuninitialized
+-Wmissing-include-dirs
+-Wshadow
+-Wundef
+-Winvalid-pch
+
+-Winit-self
+-Wswitch-enum -Wswitch-default
+-Wformat=2 -Wformat-nonliteral -Wformat-security -Wformat-y2k
+
+-Wdouble-promotion
+-Wfloat-equal
+-Wpointer-arith
+
+
+-Wstrict-overflow=5
+-Wcast-qual
+-Wcast-align
+-Wconversion
+-Wpacked
+
+
+-Wstrict-aliasing -fstrict-aliasing
+-Wredundant-decls
+-Wmissing-declarations
+-Wmissing-field-initializers
+
+-Wwrite-strings
+-Wstack-protector -fstack-protector
+#-Wpadded
+-Winline
+-Wdisabled-optimization
+
+
+-Wzero-as-null-pointer-constant
+-Wctor-dtor-privacy
+-Wold-style-cast
+-Woverloaded-virtual
+
+
+-Wlogical-op
+#-Wstack-usage=1024 -fstack-usage # -Wframe-larger-than=1024
+-Wtrampolines
+-Wvector-operation-performance
+
+
+-Wuseless-cast
+-Wnoexcept
+-Wstrict-null-sentinel
+
+
+-Wsuggest-final-types
+-Wsuggest-final-methods
+-Wsuggest-override
+
+
+-Wshift-overflow
+-Wshift-negative-value
+-Wnull-dereference
+-Wshift-overflow=2
+-Wduplicated-cond
+
+#-Wvirtual-inheritance
+#-Wtemplates
+#-Wmultiple-inheritance
+
+
+-Wunused-macros
+-Wstringop-overflow=4
+-Wduplicated-branches
+-Walloc-zero
+-Walloca
+
+
+-Wcast-align=strict
+-Wstringop-truncation
+-Wextra-semi
+
+-Wstrict-overflow=4
+
+-Wsuggest-attribute=pure
+-Wsuggest-attribute=const
+-Wsuggest-attribute=noreturn
+-Wmissing-noreturn
+)
 
 # # this lets me include files relative to the root source directory with a <> pair
 # target_include_directories(example PUBLIC src/main)

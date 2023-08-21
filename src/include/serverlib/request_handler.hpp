@@ -3,7 +3,7 @@
 
 #include "http.hpp"
 
-HTTPResponse options_request(const HTTPRequest &request);
+HTTPResponse options_request(const HTTPRequest& request);
 
 // GET request handling
 
@@ -28,7 +28,6 @@ class IGETRequestHandler;
 template <typename T>
 concept GETRequestHandler = std::is_base_of<IGETRequestHandler, T>::value;
 
-
 // HEAD request handling
 
 class IHEADRequestHandler;
@@ -36,7 +35,8 @@ class IHEADRequestHandler;
 template <typename T>
 concept HEADRequestHandler = std::is_base_of<IHEADRequestHandler, T>::value;
 
-template <HEADRequestHandler T> HTTPResponse head_request(const HTTPRequest &request);
+template <HEADRequestHandler T>
+HTTPResponse head_request(const HTTPRequest& request);
 
 // POST request handling
 enum class POSTResultState { OK, CREATED, NO_CONTENT, SEE_OTHER, ERROR };
@@ -58,7 +58,7 @@ template <typename T>
 concept PUTRequestHandler = std::is_base_of<IPUTRequestHandler, T>::value;
 
 template <PUTRequestHandler T>
-HTTPResponse put_request(const HTTPRequest &request);
+HTTPResponse put_request(const HTTPRequest& request);
 
 // DELETE request handling
 
@@ -70,10 +70,10 @@ template <typename T>
 concept DELETERequestHandler = std::is_base_of<IDELETERequestHandler, T>::value;
 
 template <DELETERequestHandler T>
-HTTPResponse delete_request(const HTTPResponse &response);
+HTTPResponse delete_request(const HTTPResponse& response);
 
 // TRACE request handling
 
-HTTPResponse trace_request(const HTTPRequest &request);
+HTTPResponse trace_request(const HTTPRequest& request);
 
 #endif // REQUEST_HANDLER_HPP

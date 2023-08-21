@@ -6,7 +6,7 @@
 std::unordered_set<std::string> methods = {
 		"OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"};
 
-std::tuple<std::string_view, std::string_view>
+inline std::tuple<std::string_view, std::string_view>
 next_token(std::string_view str, size_t start = 0, std::string delim = " ") {
 	size_t found = str.find(delim, start);
 	if (found == std::string::npos) {
@@ -18,7 +18,7 @@ next_token(std::string_view str, size_t start = 0, std::string delim = " ") {
 	return std::make_tuple(tok, str);
 }
 
-std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
+inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
 parse_request_line(std::string_view str) {
 	std::cout << "parse_request_line: " << str << std::endl;
 	auto [method_str, resta] = next_token(str);
@@ -37,7 +37,7 @@ parse_request_line(std::string_view str) {
 	return std::make_tuple(HTTPRequest(method, std::string(url), version), restc);
 }
 
-std::expected<std::tuple<std::string_view, std::string_view>, parser_error>
+inline std::expected<std::tuple<std::string_view, std::string_view>, parser_error>
 parse_header(std::string_view str) {
 	auto [field_name, rest] = next_token(str, 0);
 

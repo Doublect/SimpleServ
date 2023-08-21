@@ -26,8 +26,8 @@ int main() {
 	ssl_server.startup();
 	std::cout << "Server ready." << std::endl;
 
-	std::thread http_thread(&HTTPServer::receive_connection, &server);
-	std::thread https_thread(&HTTPSServer::receive_connection, &ssl_server);
+	std::thread http_thread(&Server::receive_connection, &server);
+	std::thread https_thread(&Server::receive_connection, &ssl_server);
 
 	std::unique_lock<std::mutex> lock(exit_mutex);
 	exit_signal.wait(lock);
@@ -35,7 +35,7 @@ int main() {
 	return 0;
 }
 
-void signal_handler(int signum) {
+[[noreturn]] void signal_handler(int signum) {
 	std::cout << "Signal received: " << signum << std::endl;
 	std::cout << "Closing socket..." << std::endl;
 	server.close_connection();
