@@ -59,3 +59,8 @@ certs/
 
 server
 unit_tests
+
+# Ninja files
+/build.ninja
+.ninja_deps
+.ninja_log

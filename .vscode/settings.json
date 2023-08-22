@@ -92,7 +92,12 @@
         "valarray": "cpp",
         "variant": "cpp",
         "strstream": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "__tree": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "C_Cpp.default.compileCommands": "builddir/vscode_compile_commands.json",
     "C_Cpp.default.cppStandard": "gnu++23",
