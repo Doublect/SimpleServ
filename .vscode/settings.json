@@ -104,4 +104,8 @@
     "cmake.configureOnOpen": true,
     "C_Cpp.errorSquiggles": "enabled",
     "clang-format.style": "file",
+
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": false,
 }
