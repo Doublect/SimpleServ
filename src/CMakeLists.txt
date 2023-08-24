@@ -19,7 +19,7 @@ endif()
 find_package(WolfSSL REQUIRED)
 
 add_library(serverlib SHARED)
-target_link_libraries(serverlib PRIVATE WolfSSL::WolfSSL)
+target_link_libraries(serverlib PUBLIC WolfSSL::WolfSSL)
 target_include_directories(serverlib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_sources(serverlib PUBLIC parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
 

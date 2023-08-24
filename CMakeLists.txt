@@ -7,8 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 
-#add_executable(mytest test1.cpp)
-
 add_subdirectory(src)
 add_subdirectory(tests)
 
