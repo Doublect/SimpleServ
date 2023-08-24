@@ -33,7 +33,10 @@ add_subdirectory(tests)
 # add_executable(example ${sources} ${data})
 
 # # just for example add some compiler flags
-target_compile_options(serverlib PUBLIC -Wfloat-conversion
+target_compile_options(serverlib PUBLIC 
+-fdiagnostics-color
+
+-Wfloat-conversion
 -Wall
 -Wextra
 -Wpedantic

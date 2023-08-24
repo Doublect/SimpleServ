@@ -4,6 +4,7 @@
 #include "http.hpp"
 #include "parser.hpp"
 
+#include <thread>
 #include <wolfssl/ssl.h>
 
 [[noreturn]] void signal_handler(int signal);
@@ -11,9 +12,20 @@
 #define HTTP_PORT "80"
 #define HTTPS_PORT "443"
 
+enum class ServerType {
+	HTTP,
+	HTTPS
+};
+
 class Server {
-	public:
-	[[noreturn]] void receive_connection();
+public:
+	virtual void startup() = 0;
+	[[noreturn]] virtual void receive_connection();
+	const std::string& get_port_str() { return port; }
+	virtual void close_connection() = 0;
+
+	Server() = default;
+	~Server() = default;
 
 protected:
 	std::string port;
@@ -26,17 +38,38 @@ protected:
 	virtual void receive() = 0;
 };
 
+class ServerFacade {
+	Server *server;
+public:
+	ServerFacade(Server *server_in) { server = server_in; }
+	~ServerFacade() = default;
+
+	const std::string& get_port_str() { return server->get_port_str(); }
+	void startup() {
+		server->startup();
+	}
+	std::thread receive_connection() {
+		return std::thread(&Server::receive_connection, server);
+	}
+	void close_connection() {
+		server->close_connection();
+	}
+};
+
 class HTTPServer : public Server {
 public:
 	HTTPServer() { this->port = HTTP_PORT; }
+	HTTPServer(std::string&& port_str) { this->port = port_str; }
+	HTTPServer(const std::string& port_str) { this->port = std::string(port_str); }
+
 	~HTTPServer() { close_connection(); }
 
-	void startup();
+	void startup() override;
 	void accept_incoming();
 	void receive() override;
 	static HTTPResponse prepare_response(HTTPRequest request);
 	void send_html(HTTPResponse response);
-	void close_connection();
+	void close_connection() override;
 };
 
 class HTTPSServer : public Server {
@@ -46,14 +79,15 @@ private:
 
 public:
 	HTTPSServer() { this->port = HTTPS_PORT; }
+	HTTPSServer(const std::string& port_str) { this->port = std::string(port_str); }
+
 	~HTTPSServer() { close_connection(); }
 
-	void startup();
+	void startup() override;
 	void load_tls();
-	[[noreturn]] void receive_connection();
 	void receive() override;
 	void send_html(HTTPResponse response);
-	void close_connection();
+	void close_connection() override;
 };
 
 #endif
