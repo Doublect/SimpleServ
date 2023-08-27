@@ -44,6 +44,10 @@ public:
 		for (auto& server_unit : servers) {
 			server_unit.server.close_connection();
 		}
+
+		for (auto& server_thread : server_threads) {
+			server_thread.~thread();
+		}
 	}
 
 	void startup() {

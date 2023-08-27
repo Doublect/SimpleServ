@@ -258,9 +258,14 @@ HTTPResponse HTTPServer::prepare_response(HTTPRequest request) {
 
 		std::string path = "../webdir" + remove_query(request.path());
 
-		std::ifstream file(path);
-		file.open(path, std::ios::in);
-		if (file.is_open()) {
+		std::ifstream file(path, std::ios::in);
+		std::ifstream compressed(path + ".br", std::ios::in);
+		if (compressed.is_open()) {
+			std::stringstream ss;
+			ss << compressed.rdbuf();
+			response.SetContent(ss.str());
+			response.SetHeader("Content-Encoding", "br");
+		} else if (file.is_open()) {
 			std::stringstream ss;
 			ss << file.rdbuf();
 			response.SetContent(ss.str());

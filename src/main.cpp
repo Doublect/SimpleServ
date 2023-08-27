@@ -2,6 +2,7 @@
 #include <wolfssl/wolfcrypt/settings.h>
 
 #include "include/serverlib/server_manager.hpp"
+#include "include/serverlib/content_coding.hpp"
 
 #include <condition_variable>
 #include <csignal>
@@ -16,6 +17,9 @@ using namespace std::literals::string_literals;
 ServerManager server_manager;
 
 int main() {
+	FileEncoder file_encoder;
+	file_encoder.encode_directory("../webdir");
+	
 	server_manager = ServerManager(
 			std::vector{ServerConfig{"HTTP"s, ServerType::HTTP, "80"s},
 			ServerConfig{"HTTPS"s, ServerType::HTTPS, "443"s}});
