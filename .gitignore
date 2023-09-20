@@ -54,8 +54,10 @@ build/
 
 .idea
 
+# Web files
 webdir/
 certs/
+*.gz
 
 server
 unit_tests

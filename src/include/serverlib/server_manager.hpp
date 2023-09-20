@@ -1,6 +1,7 @@
 #ifndef WEBSERVER_SERVER_MANAGER_HPP
 #define WEBSERVER_SERVER_MANAGER_HPP
 
+#include "file_manager.hpp"
 #include "server.hpp"
 
 #include <optional>
@@ -12,7 +13,6 @@ struct ServerConfig {
 	ServerType serverType;
 	std::string port;
 };
-
 
 struct ServerUnit {
 	std::string name;
@@ -31,10 +31,9 @@ public:
 	ServerManager(ServerManager&) = delete;
 	ServerManager& operator=(ServerManager&) = delete;
 
-
 	ServerManager(std::vector<ServerConfig> configs) {
 		for (auto& server : configs) {
-			this->servers.push_back(ServerUnit {server.name, ServerFacade(get_server(server))});
+			this->servers.push_back(ServerUnit {server.name, ServerFacade(configure_server(server))});
 		}
 
 		startup();
@@ -66,7 +65,7 @@ public:
 	}
 
 private: 
-	constexpr Server *get_server(const ServerConfig& config) {
+	constexpr Server *configure_server(const ServerConfig& config) {
 		switch (config.serverType) {
 			case ServerType::HTTP:
 				return new HTTPServer(config.port);

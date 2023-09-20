@@ -3,6 +3,7 @@
 
 #include "include/serverlib/server_manager.hpp"
 #include "include/serverlib/content_coding.hpp"
+#include "include/serverlib/file_manager.hpp"
 
 #include <condition_variable>
 #include <csignal>
@@ -17,9 +18,9 @@ using namespace std::literals::string_literals;
 ServerManager server_manager;
 
 int main() {
-	FileEncoder file_encoder;
-	file_encoder.encode_directory("../webdir");
-	
+	Server::file_manager.construct_file_descriptors("../webdir");
+	Server::file_manager.generate_encoded_files();
+
 	server_manager = ServerManager(
 			std::vector{ServerConfig{"HTTP"s, ServerType::HTTP, "80"s},
 			ServerConfig{"HTTPS"s, ServerType::HTTPS, "443"s}});

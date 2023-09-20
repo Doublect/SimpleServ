@@ -3,6 +3,7 @@
 
 #include "http.hpp"
 #include "parser.hpp"
+#include "file_manager.hpp"
 
 #include <thread>
 #include <wolfssl/ssl.h>
@@ -23,9 +24,11 @@ public:
 	[[noreturn]] virtual void receive_connection();
 	const std::string& get_port_str() { return port; }
 	virtual void close_connection() = 0;
+	inline static FileManager file_manager;
 
 	Server() = default;
 	~Server() = default;
+
 
 protected:
 	std::string port;

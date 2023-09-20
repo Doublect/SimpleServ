@@ -9,7 +9,8 @@
 #include <fstream>
 
 // TODO: Add stream support
-void Brotli::encode(const std::string& path, const std::string& filename) {
+std::string Brotli::encode(const std::string& path, const std::string& filename, const std::string& output_prefix) {
+	std::cout << "Opening file... " << path + "/" + filename << std::endl;
 	std::ifstream file(path + "/" + filename, std::ios::in | std::ios::binary);
 
 	auto file_size = std::filesystem::file_size(path + "/" + filename);
@@ -29,12 +30,22 @@ void Brotli::encode(const std::string& path, const std::string& filename) {
 		std::cout << "Writing to file a size of " << output_size << std::endl;
 		// Write compressed buffer to file
 		std::vector<uint8_t> output_vec(output, output + output_size);
-		std::ofstream output_file(path + "/" + filename + ".br", std::ios::out | std::ios::binary);
+		std::string output_path;
+		
+		if(output_prefix == "") {
+			output_path = path + "/" + filename + ".br";
+		} else {
+			output_path = output_prefix + "/" + path + "/" + filename + ".br";
+		}
+
+		std::ofstream output_file(output_path, std::ios::out | std::ios::binary);
 		std::copy(output_vec.begin(), output_vec.end(), std::ostreambuf_iterator<char>(output_file));
+
+		return output_path;
 	}
 
 
-	return;
+	return "";
 };
 
 // std::string GZip::encode(const std::string& path, const std::string& filename) {

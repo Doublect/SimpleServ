@@ -13,6 +13,8 @@
 #include <wolfssl/ssl.h>
 
 #include <csignal>
+#include <filesystem>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -233,50 +235,23 @@ HTTPResponse HTTPServer::prepare_response(HTTPRequest request) {
 	HTTPResponse response =
 			HTTPResponse(HTTPStatusCode::OK, HTTPVersion::HTTP_1_1);
 
-	if (is_supported_extension(remove_query(request.path()))) {
-		if (is_extension(request.path(), ".html")) {
-			response.SetHeader("Content-Type", "text/html");
-		} else if (is_extension(request.path(), ".js")) {
-			response.SetHeader("Content-Type", "text/javascript");
-		} else if (is_extension(request.path(), ".css")) {
-			response.SetHeader("Content-Type", "text/css");
-		} else if (is_extension(request.path(), ".png")) {
-			response.SetHeader("Content-Type", "image/png");
-		} else if (is_extension(request.path(), ".jpg")) {
-			response.SetHeader("Content-Type", "image/jpg");
-		} else if (is_extension(request.path(), ".svg")) {
-			response.SetHeader("Content-Type", "image/svg+xml");
-		} else if (is_extension(request.path(), ".ttf")) {
-			response.SetHeader("Content-Type", "font/ttf");
-		} else if (is_extension(request.path(), ".woff")) {
-			response.SetHeader("Content-Type", "font/woff");
-		} else if (is_extension(request.path(), ".woff2")) {
-			response.SetHeader("Content-Type", "font/woff2");
-		} else {
-			response.SetHeader("Content-Type", "text/plain");
-		}
+	std::filesystem::path path = "../webdir" + remove_query(request.path());
+	std::cout << "Requested path: " << path << std::endl;
+	auto expected_file_data = file_manager.get_file(std::filesystem::path(path));
 
-		std::string path = "../webdir" + remove_query(request.path());
-
-		std::ifstream file(path, std::ios::in);
-		std::ifstream compressed(path + ".br", std::ios::in);
-		if (compressed.is_open()) {
-			std::stringstream ss;
-			ss << compressed.rdbuf();
-			response.SetContent(ss.str());
-			response.SetHeader("Content-Encoding", "br");
-		} else if (file.is_open()) {
-			std::stringstream ss;
-			ss << file.rdbuf();
-			response.SetContent(ss.str());
-		} else {
-			std::cout << "File not found: " << path << std::endl;
-			response = HTTPResponse(HTTPStatusCode::NOT_FOUND, HTTPVersion::HTTP_1_1);
-		}
-	} else {
-		response = HTTPResponse(HTTPStatusCode::SERVICE_UNAVAILABLE,
-														HTTPVersion::HTTP_1_1);
+	if(!expected_file_data.has_value()) {
+		std::cerr << expected_file_data.error().what() << std::endl;
+		response = HTTPResponse(HTTPStatusCode::NOT_FOUND, HTTPVersion::HTTP_1_1);
+		return response;
 	}
+
+	auto file_data = expected_file_data.value();
+
+	response.SetHeader("Content-Type", decode_filetype(file_data.filetype));
+	if(file_data.file_encoding != FileEncoding::NONE) {
+		response.SetHeader("Content-Encoding", decode_file_encoding(file_data.file_encoding));
+	}
+	response.SetContent(file_data.content);
 
 	return response;
 }

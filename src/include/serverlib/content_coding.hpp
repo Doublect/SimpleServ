@@ -9,7 +9,7 @@ public:
 	Brotli() = default;
 	~Brotli() = default;
 
-	void encode(const std::string& path, const std::string& filename);
+	std::string encode(const std::string& path, const std::string& filename, const std::string& output_prefix =  "");
 	//void decompress();
 };
 
