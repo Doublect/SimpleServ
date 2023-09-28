@@ -6,6 +6,9 @@
 #include "file_manager.hpp"
 
 #include <thread>
+
+#include "user_settings.h"
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>
 
 [[noreturn]] void signal_handler(int signal);
@@ -24,7 +27,7 @@ public:
 	[[noreturn]] virtual void receive_connection();
 	const std::string& get_port_str() { return port; }
 	virtual void close_connection() = 0;
-	inline static FileManager file_manager{};
+	static FileManager file_manager;
 
 	Server() = default;
 	~Server() = default;
@@ -42,7 +45,15 @@ protected:
 };
 
 class ServerFacade {
+private:	
 	Server *server;
+	
+	#ifdef TEST
+	void process_request(std::string& request_str) {
+		server->process_request(request_str);
+	}
+	#endif
+
 public:
 	ServerFacade(Server *server_in) { server = server_in; }
 	~ServerFacade() = default;
@@ -70,6 +81,7 @@ public:
 	void startup() override;
 	void accept_incoming();
 	void receive() override;
+	std::optional<HTTPResponse>  process_request(std::string& request_str);
 	static HTTPResponse prepare_response(HTTPRequest request);
 	void send_html(HTTPResponse response);
 	void close_connection() override;
@@ -89,6 +101,7 @@ public:
 	void startup() override;
 	void load_tls();
 	void receive() override;
+	std::optional<HTTPResponse> process_request(std::string& request_str);
 	void send_html(HTTPResponse response);
 	void close_connection() override;
 };

@@ -52,39 +52,34 @@ struct FileCacheEntry {
 	std::string content;
 };
 
+//TODO: Support for compressed files extensions
+FileType encode_filetype(const std::string& filename);
 std::string decode_filetype(FileType filetype);
 std::string decode_file_encoding(FileEncoding file_encoding);
 
-template <typename T>
+template <typename T> requires std::is_same_v<T, HTTPFileData>
 inline FileCacheEntry create_file_cache_entry(T value) {
-	static_assert(std::is_same_v<T, HTTPFileData>, "T must be of type HTTPFileData");
+	const HTTPFileData& file_data = value;
+	
+	return FileCacheEntry{decode_filetype(file_data.filetype), file_data.filetype, file_data.file_encoding, file_data.content};
 };
 
-template <>
-inline FileCacheEntry create_file_cache_entry(HTTPFileData value) {
-	return FileCacheEntry{decode_filetype(value.filetype), value.filetype, value.file_encoding, value.content};
-};
-
-template <typename T>
+template <typename T> requires std::is_same_v<T, HTTPFileData>
 inline T from_file_cache_entry(FileCacheEntry value) {
-	static_assert(std::is_same_v<T, HTTPFileData>, "T must be of type HTTPFileData");
-};
-
-template <>
-inline HTTPFileData from_file_cache_entry(FileCacheEntry value) {
 	return HTTPFileData{value.http_content_type, value.http_content_encoding, value.content};
 };
-
 
 class FileManagerException : public std::exception {
 private:
 	std::string message;
 public:
 	FileManagerException(const std::string& message_in) : message(message_in) {}
-	const char* what() const noexcept override {
+	const char* what() const noexcept final {
 		return message.c_str();
 	}
 };
+
+//FileManagerException::FileManagerException(const std::string& message_in) : message(message_in) {};
 
 class FileManagerNotFoundException : public FileManagerException {
 public:
@@ -124,13 +119,6 @@ public:
 	virtual std::expected<DataT, ErrorT> get_file(const std::string& full_path) override;
 };
 
-//TODO: Support for compressed files extensions
-FileType encode_filetype(const std::string& filename);
-
-std::string decode_filetype(FileType filetype);
-
-std::string decode_file_encoding(FileEncoding file_encoding);
-
 template<typename T, typename E>
 class FileDiskFetcher: public FileFetcher<T, E> {
 	typedef T DataT;
@@ -146,7 +134,7 @@ public:
 
 	void construct_file_descriptors(const std::string& path) {
 		const std::filesystem::path dir_path(path);
-		std::cout << "Collecting files from directory: " << dir_path << std::endl;
+		//std::cout << "Collecting files from directory: " << dir_path << std::endl;
 		for (auto const& dir_entry : std::filesystem::directory_iterator{dir_path}) {
 			if(dir_entry.is_directory()) {
 				construct_file_descriptors(dir_entry.path().string());
@@ -161,14 +149,14 @@ public:
 								{FileEncoding::NONE, FileEntry{dir_entry.path().string()}}
 						}
 				};
-				std::cout << "file_descriptors: " << dir_entry.path().string() << std::endl;
+				//std::cout << "file_descriptors: " << dir_entry.path().string() << std::endl;
 			}
 		}
-	};
+	}
 
 	void generate_encoded_files() {
 		for(const auto& [path, file_descriptor] : file_descriptors) {
-			std::cout << "Encoding file: " << path << std::endl;
+			//std::cout << "Encoding file: " << path << std::endl;
 			if(file_descriptor.filetype == FileType::TEXT_HTML ||
 					file_descriptor.filetype == FileType::TEXT_CSS ||
 					file_descriptor.filetype == FileType::TEXT_JS) {

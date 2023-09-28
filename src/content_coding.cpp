@@ -10,24 +10,24 @@
 
 // TODO: Add stream support
 std::string Brotli::encode(const std::string& path, const std::string& filename, const std::string& output_prefix) {
-	std::cout << "Opening file... " << path + "/" + filename << std::endl;
+	//std::cout << "Opening file... " << path + "/" + filename << std::endl;
 	std::ifstream file(path + "/" + filename, std::ios::in | std::ios::binary);
 
 	auto file_size = std::filesystem::file_size(path + "/" + filename);
 
-	std::cout << "Allocating buffer..." << std::endl;
+	//std::cout << "Allocating buffer..." << std::endl;
 	// Read file into buffer
 	std::vector<uint8_t> input;
 	input.reserve(file_size);
 	input.assign((std::istreambuf_iterator<char>(file)),
 				       std::istreambuf_iterator<char>());
-	std::cout << "Compressing file of size " << input.size() << std::endl;
+	//std::cout << "Compressing file of size " << input.size() << std::endl;
 	// Compress buffer
 	size_t output_size = input.size();
 	u_int8_t* output = new u_int8_t[input.size()];
 	// TODO: Check return value
 	if(BROTLI_FALSE != BrotliEncoderCompress(4, BROTLI_DEFAULT_WINDOW, BROTLI_DEFAULT_MODE, input.size(), input.data(), &output_size, output)) {
-		std::cout << "Writing to file a size of " << output_size << std::endl;
+		//std::cout << "Writing to file a size of " << output_size << std::endl;
 		// Write compressed buffer to file
 		std::vector<uint8_t> output_vec(output, output + output_size);
 		std::string output_path;

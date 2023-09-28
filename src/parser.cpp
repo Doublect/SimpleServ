@@ -20,7 +20,9 @@ next_token(std::string_view str, size_t start = 0, std::string delim = " ") {
 
 inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
 parse_request_line(std::string_view str) {
-	std::cout << "parse_request_line: " << str << std::endl;
+	//std::cout << "parse_request_line: " << str << std::endl;
+	
+
 	auto [method_str, resta] = next_token(str);
 	if (!methods.contains(std::string(method_str))) {
 		return std::unexpected(parser_error());
@@ -94,7 +96,7 @@ std::expected<HTTPRequest, parser_error> parse_http_request(std::string str) {
 		return std::unexpected(headers_result.error());
 	}
 
-	std::cout << "Parsed headers" << std::endl;
+	//std::cout << "Parsed headers" << std::endl;
 
 	auto [headers, restb] = headers_result.value();
 

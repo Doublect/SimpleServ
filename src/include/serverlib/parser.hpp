@@ -7,10 +7,10 @@
 #include <stdexcept>
 #include <string>
 
-class parser_error : public std::exception {
+class parser_error final : public std::exception {
 public:
 	parser_error() {}
-	~parser_error() {}
+	~parser_error() final {}
 };
 
 std::expected<HTTPRequest, parser_error> parse_http_request(std::string str);

@@ -54,10 +54,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(brotli)
 
-add_library(serverlib SHARED)
-target_link_libraries(serverlib PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc)
-target_include_directories(serverlib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-target_sources(serverlib PUBLIC content_coding.cpp file_manager.cpp parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
+add_compile_definitions(WOLFSSL_USER_SETTINGS)
+set(WOLFSSL_EXAMPLES OFF)
+set(WOLFSSL_CRYPT_TESTS OFF)
+set(WOLFSSL_USER_SETTINGS ON)
 
-add_executable(server main.cpp)
-target_link_libraries(server PRIVATE serverlib)
+add_library(server SHARED)
+target_link_libraries(server PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc)
+target_include_directories(server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_sources(server PUBLIC content_coding.cpp file_manager.cpp message.cpp parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
+
+add_executable(serverexec main.cpp)
+target_link_libraries(serverexec PRIVATE server)

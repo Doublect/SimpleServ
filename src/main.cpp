@@ -1,6 +1,3 @@
-#define WOLFSSL_USER_SETTINGS
-#include <wolfssl/wolfcrypt/settings.h>
-
 #include "include/serverlib/server_manager.hpp"
 #include "include/serverlib/content_coding.hpp"
 #include "include/serverlib/file_manager.hpp"

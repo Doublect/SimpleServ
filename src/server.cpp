@@ -22,6 +22,8 @@
 #define BACKLOG 10
 #define MAXBUFLEN 4096
 
+FileManager Server::file_manager = FileManager();
+
 void HTTPServer::close_connection() {
 	close(client_fd);
 	close(sockfd);
@@ -139,16 +141,11 @@ void HTTPServer::receive() {
 
 	std::string request_str{buf};
 	std::cout << "Received HTTP request: " << numbytes << std::endl;
-	auto result = parse_http_request(request_str);
-
-	if (!result) {
-		std::cout << "Error parsing HTTP request" << std::endl;
-		return;
+	auto response = process_request(request_str);
+	
+	if (response.has_value()) {
+		send_html(response.value());
 	}
-
-	auto request = result.value();
-
-	send_html(prepare_response(request));
 }
 
 void HTTPSServer::receive() {
@@ -173,26 +170,48 @@ void HTTPSServer::receive() {
 
 	if (numbytes < 0) {
 		(wolfSSL_ERR_print_errors_fp(stdout, wolfSSL_get_error(ssl, numbytes)));
+		return;
 	}
 
 	buf[numbytes] = '\0';
 
 	if (numbytes > 0) {
-
 		std::string request_str{buf};
-		std::cout << "Received HTTP request: " << numbytes << std::endl;
-		auto result = parse_http_request(request_str);
-
-		if (!result) {
-			std::cout << "Error parsing HTTP request" << std::endl;
-			return;
+		auto response = process_request(request_str);
+	
+		if (response.has_value()) {
+			send_html(response.value());
 		}
-
-		auto request = result.value();
-
-		send_html(HTTPServer::prepare_response(request));
 	}
 }
+
+std::optional<HTTPResponse> HTTPServer::process_request(std::string& request_str) {
+	auto result = parse_http_request(request_str);
+
+	if (!result) {
+		//std::cout << "Error parsing HTTP request" << std::endl;
+		return std::nullopt;
+	}
+
+	auto request = result.value();
+
+	return prepare_response(request);
+}
+
+std::optional<HTTPResponse> HTTPSServer::process_request(std::string& request_str) {
+	std::cout << "Received HTTP request: " << request_str.length() << std::endl;
+	auto result = parse_http_request(request_str);
+
+	if (!result) {
+		std::cout << "Error parsing HTTP request" << std::endl;
+		return std::nullopt;
+	}
+
+	auto request = result.value();
+
+	return HTTPServer::prepare_response(request);
+}
+
 
 constexpr bool is_html(std::string_view str) {
 	// TODO: check why ends_with is not working
@@ -236,7 +255,7 @@ HTTPResponse HTTPServer::prepare_response(HTTPRequest request) {
 			HTTPResponse(HTTPStatusCode::OK, HTTPVersion::HTTP_1_1);
 
 	std::filesystem::path path = "../webdir" + remove_query(request.path());
-	std::cout << "Requested path: " << path << std::endl;
+	//std::cout << "Requested path: " << path << std::endl;
 	auto expected_file_data = file_manager.get_file(std::filesystem::path(path));
 
 	if(!expected_file_data.has_value()) {

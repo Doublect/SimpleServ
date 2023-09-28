@@ -5,8 +5,11 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_BUILD_TYPE Release)
+
 #set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 
+add_subdirectory(benchmarks)
 add_subdirectory(src)
 add_subdirectory(tests)
 
@@ -33,7 +36,7 @@ add_subdirectory(tests)
 # add_executable(example ${sources} ${data})
 
 # # just for example add some compiler flags
-target_compile_options(serverlib PUBLIC 
+target_compile_options(server PRIVATE 
 -fdiagnostics-color
 
 -Wfloat-conversion
@@ -70,7 +73,7 @@ target_compile_options(serverlib PUBLIC
 -Wwrite-strings
 -Wstack-protector -fstack-protector
 #-Wpadded
--Winline
+#-Winline
 -Wdisabled-optimization
 
 
@@ -124,6 +127,10 @@ target_compile_options(serverlib PUBLIC
 -Wsuggest-attribute=const
 -Wsuggest-attribute=noreturn
 -Wmissing-noreturn
+)
+
+add_compile_definitions(
+  $<CONFIG>
 )
 
 # # this lets me include files relative to the root source directory with a <> pair
