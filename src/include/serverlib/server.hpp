@@ -24,7 +24,7 @@ public:
 	[[noreturn]] virtual void receive_connection();
 	const std::string& get_port_str() { return port; }
 	virtual void close_connection() = 0;
-	inline static FileManager file_manager;
+	inline static FileManager file_manager{};
 
 	Server() = default;
 	~Server() = default;

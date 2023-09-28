@@ -63,49 +63,28 @@ std::string decode_file_encoding(FileEncoding file_encoding) {
 	return "";
 };
 
-void FileManager::construct_file_descriptors(const std::string& path) {
-	const std::filesystem::path dir_path(path);
-	std::cout << "Collecting files from directory: " << dir_path << std::endl;
-	for (auto const& dir_entry : std::filesystem::directory_iterator{dir_path}) {
-		if(dir_entry.is_directory()) {
-			construct_file_descriptors(dir_entry.path().string());
+template <typename T, typename E, typename F> requires IsFileFetcher<T, E, F>
+std::expected<T, E> FileCache<T, E, F>::get_file(const std::string &full_path) {
+	std::cout << "Requested file: " << full_path << std::endl;
+	std::cout << "File cache size: " << file_cache.size() << std::endl;
+	if(file_cache.find(full_path) == file_cache.end()) {
+		auto returned = file_fetcher.get_file(full_path);
+		
+		if(returned.has_value()) {
+			std::cout << "File not found in cache, adding it..." << std::endl;
+			file_cache[full_path] = create_file_cache_entry<T>(returned.value());
 		} else {
-			std::string filename = dir_entry.path().filename().string();
-			FileType filetype = encode_filetype(filename);
-	
-			file_descriptors[dir_entry.path().string()] = FileDescriptor {
-					filename,
-					filetype,
-					{
-							{FileEncoding::NONE, FileEntry{dir_entry.path().string()}}
-					}
-			};
-			std::cout << "file_descriptors: " << dir_entry.path().string() << std::endl;
+			std::cout << "File not found in cache, and could not be fetched from disk." << std::endl;
+			return std::unexpected(returned.error());
 		}
 	}
+
+	FileCacheEntry file_cache_entry = file_cache[full_path];
+	return from_file_cache_entry<T>(file_cache_entry);
 };
 
-void FileManager::generate_encoded_files() {
-	for(const auto& [path, file_descriptor] : file_descriptors) {
-		std::cout << "Encoding file: " << path << std::endl;
-		if(file_descriptor.filetype == FileType::TEXT_HTML ||
-				file_descriptor.filetype == FileType::TEXT_CSS ||
-				file_descriptor.filetype == FileType::TEXT_JS) {
-			Brotli brotli;
-			std::filesystem::path dir_path(path);
-			std::string file_path = brotli.encode(dir_path.parent_path(), file_descriptor.filename, encoded_file_prefix);
-
-			file_descriptors[path].file_paths[FileEncoding::BROTLI] = FileEntry{path + ".br"};
-		}
-	}
-}
-
-std::expected<HTTPFileData, FileManagerException> FileManager::get_file(const std::string& path, const std::string& filename) {
-	get_file(path + filename);
-};
-
-std::expected<HTTPFileData, FileManagerException> FileManager::get_file(const std::string& full_path) {
-	std::lock_guard<std::mutex> guard(file_access_mutex);	
+template <>
+std::expected<HTTPFileData, FileManagerException> FileDiskFetcher<HTTPFileData, FileManagerException>::get_file(const std::string& full_path) {
 	std::cout << "Requested file: " << full_path << std::endl;
 	std::cout << "File descriptors: " << file_descriptors.size() << std::endl;
 	if(file_descriptors.find(full_path) == file_descriptors.end()) {
@@ -134,3 +113,11 @@ std::expected<HTTPFileData, FileManagerException> FileManager::get_file(const st
 		content
 	};
 };
+
+std::expected<HTTPFileData, FileManagerException> FileManager::get_file(const std::string& full_path) {
+	return file_fetcher.get_file(full_path);
+};
+
+std::expected<HTTPFileData, FileManagerException> FileManager::get_file(const std::string& path, const std::string& filename) {
+	return file_fetcher.get_file(path + filename);
+}
