@@ -1,5 +1,6 @@
 #include "include/serverlib/parser.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <unordered_set>
 
@@ -18,26 +19,66 @@ next_token(std::string_view str, size_t start = 0, std::string delim = " ") {
 	return std::make_tuple(tok, str);
 }
 
+inline const char *next_token(const char *str, std::string delim = " ") {
+	while(*str != '\0' && *str == ' ') {
+		str++;
+	}
+	
+	return str;
+}
+#define OLD
+#ifdef OLD
 inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
 parse_request_line(std::string_view str) {
-	//std::cout << "parse_request_line: " << str << std::endl;
-	
-
-	auto [method_str, resta] = next_token(str);
+	//std::cout << "parse_request_line: " << str << std::endl;	
+	const auto [method_str, resta] = next_token(str);
 	if (!methods.contains(std::string(method_str))) {
 		return std::unexpected(parser_error());
 	}
 
 	HTTPMethod method = method_string_to_enum(method_str);
 
-	auto [url, restb] = next_token(resta);
+	const auto [url, restb] = next_token(resta);
 
-	auto [version_str, restc] = next_token(restb, 0, "\r\n");
+	const auto [version_str, restc] = next_token(restb, 0, "\r\n");
 
 	HTTPVersion version = version_string_to_enum(version_str);
 
 	return std::make_tuple(HTTPRequest(method, std::string(url), version), restc);
 }
+#else
+#define EXPECT(str, char)\
+	if(*str != char || *str == '\0') {\
+		return std::unexpected(parser_error());\
+	}\
+	str++;
+
+inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
+parse_request_line(std::string_view str) {
+	const char *cstr = str.data();
+	//std::cout << "parse_request_line: " << str << std::endl;	
+	const auto [method_str, resta] = next_token(str);
+	if (!methods.contains(std::string(method_str))) {
+		return std::unexpected(parser_error());
+	}
+
+	HTTPMethod method = method_string_to_enum(cstr);
+
+	EXPECT(cstr, ' ');
+
+	const char * url_end = strstr(cstr, " ");
+
+	std::string url(cstr, url_end);
+
+	cstr = url_end + 1;
+
+	HTTPVersion version = version_string_to_enum(cstr);
+
+	str.remove_prefix(cstr - str.data());
+
+	return std::make_tuple(HTTPRequest(method, url, version), str);
+}
+#endif
 
 inline std::expected<std::tuple<std::string_view, std::string_view>, parser_error>
 parse_header(std::string_view str) {
@@ -89,6 +130,8 @@ std::expected<HTTPRequest, parser_error> parse_http_request(std::string str) {
 	}
 
 	auto [request, rest] = result.value();
+
+	//std::cout << "B" << rest << "E" << std::endl;
 
 	auto headers_result = parse_message_headers(rest);
 

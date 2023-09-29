@@ -6,6 +6,7 @@
 #define WEBSERVER_MESSAGE_HPP
 
 #include <algorithm>
+#include <cstring>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -36,7 +37,8 @@ enum HTTPStatusCode {
 
 static std::string HTTP_METHOD_STRINGS[] = {
 		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
-
+#define OLD
+#ifdef OLD
 constexpr HTTPMethod method_string_to_enum(std::string_view str) {
 	std::string string_upper;
 	std::transform(str.begin(), str.end(), std::back_inserter(string_upper),
@@ -50,12 +52,87 @@ constexpr HTTPMethod method_string_to_enum(std::string_view str) {
 
 	throw std::runtime_error("Invalid HTTP method string: " + std::string(str));
 }
+#else
+
+#define EXPECT_SW(str, char)\
+	if(*str != char || *str == '\0') {\
+		break;\
+	}\
+	str++;
+constexpr HTTPMethod method_string_to_enum(const char *&str) {
+	switch (*str) {
+		case 'G':
+			str++;
+			EXPECT_SW(str, 'E');
+			EXPECT_SW(str, 'T');
+			return HTTPMethod::GET;
+		case 'P':
+			str++;
+			if(*str == 'O') {
+				str++;
+				EXPECT_SW(str, 'S');
+				EXPECT_SW(str, 'T');
+				return HTTPMethod::POST;
+			} else if(*str == 'U') {
+				str++;
+				EXPECT_SW(str, 'T');
+				return HTTPMethod::PUT;
+			}
+			break;
+		case 'D':
+			str++;
+			EXPECT_SW(str, 'E');
+			EXPECT_SW(str, 'L');
+			EXPECT_SW(str, 'E');
+			EXPECT_SW(str, 'T');
+			EXPECT_SW(str, 'E');
+			return HTTPMethod::DELETE;
+		case 'H':
+			str++;
+			EXPECT_SW(str, 'E');
+			EXPECT_SW(str, 'A');
+			EXPECT_SW(str, 'D');
+			return HTTPMethod::HEAD;
+		case 'O':
+			str++;
+			EXPECT_SW(str, 'P');
+			EXPECT_SW(str, 'T');
+			EXPECT_SW(str, 'I');
+			EXPECT_SW(str, 'O');
+			EXPECT_SW(str, 'N');
+			EXPECT_SW(str, 'S');
+			return HTTPMethod::OPTIONS;
+		case 'T':
+			str++;
+			EXPECT_SW(str, 'R');
+			EXPECT_SW(str, 'A');
+			EXPECT_SW(str, 'C');
+			EXPECT_SW(str, 'E');
+			return HTTPMethod::TRACE;
+		case 'C':
+			str++;
+			EXPECT_SW(str, 'O');
+			EXPECT_SW(str, 'N');
+			EXPECT_SW(str, 'N');
+			EXPECT_SW(str, 'E');
+			EXPECT_SW(str, 'C');
+			EXPECT_SW(str, 'T');
+			return HTTPMethod::CONNECT;
+
+		default:
+			break;
+	}
+
+	throw std::runtime_error("Invalid HTTP method string: " + std::string(str));
+}
+#endif
 
 enum HTTPVersion { HTTP_1_0, HTTP_1_1, HTTP_2_0 };
 
 static std::string HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
 																						 "HTTP/2.0"};
 
+#ifdef OLD
 constexpr HTTPVersion version_string_to_enum(std::string_view str) {
 	std::string string_upper;
 	std::transform(str.begin(), str.end(), std::back_inserter(string_upper),
@@ -71,7 +148,57 @@ constexpr HTTPVersion version_string_to_enum(std::string_view str) {
 
 	throw std::runtime_error("Invalid HTTP version string: " + string_upper);
 }
+#else
+// constexpr HTTPVersion version_string_to_enum(std::string_view str) {
+// 	if(str.starts_with("HTTP/") && str.length() == 8) {
+// 		if (str.ends_with("1.0")) {
+// 			return HTTP_1_0;
+// 		} else if (str.ends_with("1.1")) {
+// 			return HTTP_1_1;
+// 		} else if (str.ends_with("2.0")) {
+// 			return HTTP_2_0;
+// 		}
+// 	}
 
+// 	throw std::runtime_error("Invalid HTTP version string: " + std::string(str));
+// }
+
+#define EXPECT(str, char)\
+	if(*str != char || *str == '\0') {\
+		throw std::runtime_error("Invalid HTTP version string");\
+	}\
+	str++;
+
+constexpr HTTPVersion version_string_to_enum(const char *&str) {
+	const char *end = strstr(str, "\r\n");
+	if(end - str != 8) {
+		throw std::runtime_error("Invalid HTTP version string");
+	}
+
+	EXPECT(str, 'H');
+	EXPECT(str, 'T');
+	EXPECT(str, 'T');
+	EXPECT(str, 'P');
+	EXPECT(str, '/');
+	if(str[0] == '2') {
+		str++;
+		EXPECT(str, '.');
+		EXPECT(str, '0');
+		return HTTP_2_0;
+	} else if(str[0] == '1') {
+		str++;
+		EXPECT(str, '.');
+		if(str[0] == '0') {
+			str++;
+			return HTTP_1_0;
+		} else if(str[0] == '1') {
+			str++;
+			return HTTP_1_1;
+		}
+	}
+}
+
+#endif
 class HTTPMessage {
 protected:
 	HTTPVersion version_;

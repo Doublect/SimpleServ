@@ -19,6 +19,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googlebenchmark)
 #target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-add_executable(benchmark_tests benchmark_main.cpp response_test.cpp)
+add_executable(benchmark_tests benchmark_main.cpp response_test.cpp parser_test.cpp)
 
 target_link_libraries(benchmark_tests PRIVATE benchmark::benchmark server)
