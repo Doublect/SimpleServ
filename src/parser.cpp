@@ -45,7 +45,7 @@ parse_request_line(const char *&str) {
 
 	EXPECT(cstr, ' ');
 
-	const char * url_end = strstr(cstr, " ");
+	const char *url_end = strstr(cstr, " ");
 
 	std::string url(cstr, url_end);
 
@@ -56,6 +56,9 @@ parse_request_line(const char *&str) {
 	if(version == HTTPVersion::HTTP_INVALID) {
 		return std::unexpected(parser_error());
 	}
+
+	EXPECT(cstr, '\r');
+	EXPECT(cstr, '\n');
 	
 	str = cstr;
 
@@ -96,6 +99,9 @@ parse_message_headers(std::string_view str) {
 		headers.push_back(result.value());
 		str_view.remove_prefix(next_header + 2);
 	}
+
+	// Guaranteed to be \r\n
+	str_view.remove_prefix(2);
 
 	return Headers{std::move(headers), std::move(str_view)};
 }

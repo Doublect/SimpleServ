@@ -26,6 +26,7 @@ TEST(ParserTest, ParseMessageHeader) {
     }
 
     auto headers = result.value().headers();
+		EXPECT_EQ(headers.size(), 1);
     EXPECT_EQ(headers["Content-Type"], "text/html");
 }
 
@@ -57,6 +58,7 @@ TEST(ParserTest, ParseMessageHeadersWithBody) {
 
     EXPECT_EQ(headers["Content-Type"], "text/html");
     EXPECT_EQ(headers["Content-Length"], "100");
+		EXPECT_EQ(result.value().body(), "<html><body>Hello, world!</body></html>");
 }
 
 TEST(ParserTest, ParseMessageHeadersWithBodyAndExtra) {
@@ -75,18 +77,10 @@ TEST(ParserTest, ParseMessageHeadersWithBodyAndExtra) {
 }
 
 TEST(ParserTest, MalformedMessageHeaders) {
-    std::string input = test_request_line + "\r\nContent-Type: text/html\r\n"s;
+    std::string input = test_request_line + "Content\r\n-Type: text/html\r\n"s;
 
     auto result = parse_http_request(input);
-    EXPECT_SUCCESS(result);
-    if(!result.has_value()) {
-        return;
-    }
-
-    auto headers = result.value().headers();
-
-    EXPECT_EQ(headers.find("Content-Type"), headers.end());
-    EXPECT_EQ(headers.size(), 0);
+    EXPECT_FAILURE(result);
 }
 
 TEST(ParserTest, NoHeaders) {
