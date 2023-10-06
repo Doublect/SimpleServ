@@ -35,7 +35,7 @@ enum HTTPStatusCode {
 	SERVICE_UNAVAILABLE = 503
 };
 
-constexpr char *HTTP_METHOD_STRINGS[] = {
+constexpr const char *HTTP_METHOD_STRINGS[] = {
 		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
 
 
@@ -113,7 +113,7 @@ constexpr HTTPMethod method_string_to_enum(const char *&str) {
 
 enum HTTPVersion { HTTP_1_0, HTTP_1_1, HTTP_2_0, HTTP_INVALID };
 
-constexpr char *HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
+constexpr const char *HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
 																						 "HTTP/2.0"};
 
 

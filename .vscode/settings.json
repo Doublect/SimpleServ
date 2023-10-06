@@ -121,5 +121,6 @@
 
     "editor.detectIndentation": false,
     "editor.tabSize": 2,
-    "editor.insertSpaces": false,
+		"editor.insertSpaces": false,
+		"cmake.generator": "Ninja Multi-Config",
 }

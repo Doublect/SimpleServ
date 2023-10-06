@@ -62,12 +62,6 @@ parse_request_line(const char *&str) {
 	return HTTPRequest(method, url, version);
 }
 
-
-struct Header {
-	std::string_view key;
-	std::string_view value;
-};
-
 constexpr inline std::expected<Header, parser_error>
 parse_header(std::string_view str) {
 	const char *cstr = str.data();

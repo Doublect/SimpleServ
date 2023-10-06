@@ -2,10 +2,12 @@
 #define PARSER_HPP
 
 #include "message.hpp"
+
 #include <expected>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 class parser_error final : public std::exception {
 public:
@@ -13,14 +15,10 @@ public:
 	~parser_error() final {}
 };
 
-#ifndef NDEBUG
-inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
-parse_request_line(std::string_view str);
-constexpr std::expected<
-		Headers,
-		parser_error>
-parse_message_headers(std::string_view str);
-#endif
+struct Header {
+	std::string_view key;
+	std::string_view value;
+};
 
 struct Headers {
 	std::vector<Header> headers;
