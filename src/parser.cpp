@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <unordered_set>
+#include <vector>
 
 std::unordered_set<std::string> methods = {
 		"OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"};
@@ -19,50 +20,28 @@ next_token(std::string_view str, size_t start = 0, std::string delim = " ") {
 	return std::make_tuple(tok, str);
 }
 
-inline const char *next_token(const char *str, std::string delim = " ") {
-	while(*str != '\0' && *str == ' ') {
+constexpr const char *next_token(const char *str, const char delim = ' ') {
+	while(*str != '\0' && *str != delim) {
 		str++;
 	}
 	
 	return str;
 }
-#define OLD
-#ifdef OLD
-inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
-parse_request_line(std::string_view str) {
-	//std::cout << "parse_request_line: " << str << std::endl;	
-	const auto [method_str, resta] = next_token(str);
-	if (!methods.contains(std::string(method_str))) {
-		return std::unexpected(parser_error());
-	}
 
-	HTTPMethod method = method_string_to_enum(method_str);
-
-	const auto [url, restb] = next_token(resta);
-
-	const auto [version_str, restc] = next_token(restb, 0, "\r\n");
-
-	HTTPVersion version = version_string_to_enum(version_str);
-
-	return std::make_tuple(HTTPRequest(method, std::string(url), version), restc);
-}
-#else
 #define EXPECT(str, char)\
 	if(*str != char || *str == '\0') {\
 		return std::unexpected(parser_error());\
 	}\
 	str++;
 
-inline std::expected<std::tuple<HTTPRequest, std::string_view>, parser_error>
-parse_request_line(std::string_view str) {
-	const char *cstr = str.data();
-	//std::cout << "parse_request_line: " << str << std::endl;	
-	const auto [method_str, resta] = next_token(str);
-	if (!methods.contains(std::string(method_str))) {
-		return std::unexpected(parser_error());
-	}
+inline std::expected<HTTPRequest, parser_error>
+parse_request_line(const char *&str) {
+	const char *cstr = str;
 
 	HTTPMethod method = method_string_to_enum(cstr);
+	if(method == HTTPMethod::INVALID) {
+		return std::unexpected(parser_error());
+	}
 
 	EXPECT(cstr, ' ');
 
@@ -74,30 +53,39 @@ parse_request_line(std::string_view str) {
 
 	HTTPVersion version = version_string_to_enum(cstr);
 
-	str.remove_prefix(cstr - str.data());
+	if(version == HTTPVersion::HTTP_INVALID) {
+		return std::unexpected(parser_error());
+	}
+	
+	str = cstr;
 
-	return std::make_tuple(HTTPRequest(method, url, version), str);
+	return HTTPRequest(method, url, version);
 }
-#endif
 
-inline std::expected<std::tuple<std::string_view, std::string_view>, parser_error>
+
+struct Header {
+	std::string_view key;
+	std::string_view value;
+};
+
+constexpr inline std::expected<Header, parser_error>
 parse_header(std::string_view str) {
-	auto [field_name, rest] = next_token(str, 0);
+	const char *cstr = str.data();
 
-	if (!field_name.ends_with(':')) {
+	auto field_name_end = next_token(cstr);
+
+	if (*(field_name_end-1) != ':') {
 		return std::unexpected(parser_error{});
 	}
 
-	field_name.remove_suffix(1);
-
-	return std::make_tuple(field_name, rest);
+	return Header{std::string_view(cstr, field_name_end - cstr - 1), std::string_view(field_name_end + 1, str.length() - (field_name_end - cstr + 1))};
 }
 
-std::expected<
-		std::tuple<std::map<std::string_view, std::string_view>, std::string_view>,
+constexpr std::expected<
+		Headers,
 		parser_error>
 parse_message_headers(std::string_view str) {
-	std::map<std::string_view, std::string_view> headers;
+	std::vector<Header> headers;
 	std::string_view str_view(str);
 
 	while (!str_view.starts_with("\r\n")) {
@@ -110,36 +98,32 @@ parse_message_headers(std::string_view str) {
 			std::cout << "Error in parsing header" << std::endl;
 			break;
 		}
-		auto [key, value] = result.value();
 
-		headers[key] = value;
+		headers.push_back(result.value());
 		str_view.remove_prefix(next_header + 2);
 	}
 
-	return std::make_tuple<std::map<std::string_view, std::string_view>,
-												 std::string_view>(std::move(headers),
-																					 std::move(str_view));
+	return Headers{std::move(headers), std::move(str_view)};
 }
 
 std::expected<HTTPRequest, parser_error> parse_http_request(std::string str) {
 	std::string_view str_view(str);
-	auto result = parse_request_line(str_view);
+
+	const char *cstr = str_view.data();
+	auto result = parse_request_line(cstr);
 
 	if (!result.has_value()) {
 		return std::unexpected(result.error());
 	}
 
-	auto [request, rest] = result.value();
+	auto request = result.value();
 
-	//std::cout << "B" << rest << "E" << std::endl;
-
-	auto headers_result = parse_message_headers(rest);
+	str_view.remove_prefix(cstr - str_view.data());
+	auto headers_result = parse_message_headers(str_view);
 
 	if (!headers_result.has_value()) {
 		return std::unexpected(headers_result.error());
 	}
-
-	//std::cout << "Parsed headers" << std::endl;
 
 	auto [headers, restb] = headers_result.value();
 

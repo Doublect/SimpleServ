@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
 
-enum HTTPMethod { GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT };
+enum HTTPMethod { GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, INVALID };
 
 enum HTTPStatusCode {
 	CONTINUE = 100,
@@ -35,24 +35,9 @@ enum HTTPStatusCode {
 	SERVICE_UNAVAILABLE = 503
 };
 
-static std::string HTTP_METHOD_STRINGS[] = {
+constexpr char *HTTP_METHOD_STRINGS[] = {
 		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
-#define OLD
-#ifdef OLD
-constexpr HTTPMethod method_string_to_enum(std::string_view str) {
-	std::string string_upper;
-	std::transform(str.begin(), str.end(), std::back_inserter(string_upper),
-								 [](char c) { return toupper(c); });
 
-	for (int i = 0; i < 8; i++) {
-		if (string_upper == HTTP_METHOD_STRINGS[i]) {
-			return static_cast<HTTPMethod>(i);
-		}
-	}
-
-	throw std::runtime_error("Invalid HTTP method string: " + std::string(str));
-}
-#else
 
 #define EXPECT_SW(str, char)\
 	if(*str != char || *str == '\0') {\
@@ -122,48 +107,17 @@ constexpr HTTPMethod method_string_to_enum(const char *&str) {
 		default:
 			break;
 	}
-
+	return HTTPMethod::INVALID;
 	throw std::runtime_error("Invalid HTTP method string: " + std::string(str));
 }
-#endif
 
-enum HTTPVersion { HTTP_1_0, HTTP_1_1, HTTP_2_0 };
+enum HTTPVersion { HTTP_1_0, HTTP_1_1, HTTP_2_0, HTTP_INVALID };
 
-static std::string HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
+constexpr char *HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
 																						 "HTTP/2.0"};
 
-#ifdef OLD
-constexpr HTTPVersion version_string_to_enum(std::string_view str) {
-	std::string string_upper;
-	std::transform(str.begin(), str.end(), std::back_inserter(string_upper),
-								 [](char c) { return toupper(c); });
 
-	if (string_upper == "HTTP/1.0") {
-		return HTTP_1_0;
-	} else if (string_upper == "HTTP/1.1") {
-		return HTTP_1_1;
-	} else if (string_upper == "HTTP/2.0") {
-		return HTTP_2_0;
-	}
-
-	throw std::runtime_error("Invalid HTTP version string: " + string_upper);
-}
-#else
-// constexpr HTTPVersion version_string_to_enum(std::string_view str) {
-// 	if(str.starts_with("HTTP/") && str.length() == 8) {
-// 		if (str.ends_with("1.0")) {
-// 			return HTTP_1_0;
-// 		} else if (str.ends_with("1.1")) {
-// 			return HTTP_1_1;
-// 		} else if (str.ends_with("2.0")) {
-// 			return HTTP_2_0;
-// 		}
-// 	}
-
-// 	throw std::runtime_error("Invalid HTTP version string: " + std::string(str));
-// }
-
-#define EXPECT(str, char)\
+#define EXPECT_TH(str, char)\
 	if(*str != char || *str == '\0') {\
 		throw std::runtime_error("Invalid HTTP version string");\
 	}\
@@ -175,19 +129,19 @@ constexpr HTTPVersion version_string_to_enum(const char *&str) {
 		throw std::runtime_error("Invalid HTTP version string");
 	}
 
-	EXPECT(str, 'H');
-	EXPECT(str, 'T');
-	EXPECT(str, 'T');
-	EXPECT(str, 'P');
-	EXPECT(str, '/');
+	EXPECT_TH(str, 'H');
+	EXPECT_TH(str, 'T');
+	EXPECT_TH(str, 'T');
+	EXPECT_TH(str, 'P');
+	EXPECT_TH(str, '/');
 	if(str[0] == '2') {
 		str++;
-		EXPECT(str, '.');
-		EXPECT(str, '0');
+		EXPECT_TH(str, '.');
+		EXPECT_TH(str, '0');
 		return HTTP_2_0;
 	} else if(str[0] == '1') {
 		str++;
-		EXPECT(str, '.');
+		EXPECT_TH(str, '.');
 		if(str[0] == '0') {
 			str++;
 			return HTTP_1_0;
@@ -196,9 +150,10 @@ constexpr HTTPVersion version_string_to_enum(const char *&str) {
 			return HTTP_1_1;
 		}
 	}
+
+	return HTTPVersion::HTTP_INVALID;
 }
 
-#endif
 class HTTPMessage {
 protected:
 	HTTPVersion version_;
