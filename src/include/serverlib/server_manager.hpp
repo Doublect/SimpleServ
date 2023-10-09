@@ -1,6 +1,7 @@
 #ifndef WEBSERVER_SERVER_MANAGER_HPP
 #define WEBSERVER_SERVER_MANAGER_HPP
 
+#include "socket_layer/tcp_server.hpp"
 #include "file_manager.hpp"
 #include "server.hpp"
 
@@ -58,7 +59,7 @@ public:
 
 	void open() {
 		for (auto& server_unit : servers) {
-			std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server.get_port_str() << std::endl;
+			std::cout << "Opening " << server_unit.name << " server on port nil" << std::endl;
 
 			server_threads.push_back(server_unit.server.receive_connection());
 		}

@@ -1,7 +1,7 @@
 #ifndef REQUEST_HANDLER_HPP
 #define REQUEST_HANDLER_HPP
 
-#include "http.hpp"
+#include "message.hpp"
 
 HTTPResponse options_request(const HTTPRequest& request);
 

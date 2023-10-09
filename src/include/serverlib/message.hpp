@@ -1,39 +1,14 @@
-//
-// Created by doublect on 7/27/23.
-//
-
 #ifndef WEBSERVER_MESSAGE_HPP
 #define WEBSERVER_MESSAGE_HPP
+
+#include "http.hpp"
 
 #include <algorithm>
 #include <cstring>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-
-enum HTTPMethod { GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, INVALID };
-
-enum HTTPStatusCode {
-	CONTINUE = 100,
-	SWITCHING_PROTOCOLS = 101,
-	OK = 200,
-	CREATED = 201,
-	ACCEPTED = 202,
-	NO_CONTENT = 204,
-	MULTIPLE_CHOICES = 300,
-	MOVED_PERMANENTLY = 301,
-	FOUND = 302,
-	SEE_OTHER = 303,
-	NOT_MODIFIED = 304,
-	BAD_REQUEST = 400,
-	UNAUTHORIZED = 401,
-	FORBIDDEN = 403,
-	NOT_FOUND = 404,
-	INTERNAL_SERVER_ERROR = 500,
-	NOT_IMPLEMENTED = 501,
-	BAD_GATEWAY = 502,
-	SERVICE_UNAVAILABLE = 503
-};
 
 constexpr const char *HTTP_METHOD_STRINGS[] = {
 		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
@@ -176,14 +151,32 @@ private:
 	std::string path_;
 
 public:
-	HTTPRequest(HTTPMethod method, std::string path, HTTPVersion version) {
-		this->method_ = method;
-		this->path_ = path;
+	HTTPRequest(HTTPMethod method, std::string path, HTTPVersion version) : method_(method), path_(path) {
 		this->version_ = version;
 	}
 
 	HTTPMethod method() const { return method_; }
 	std::string path() const { return path_; }
+
+	friend std::ostream &operator<<(std::ostream &os, const HTTPRequest &request) {
+		os << HTTP_METHOD_STRINGS[request.method()] << " " << request.path() << " "
+			<< HTTP_VERSION_STRINGS[request.version()] << "\r\n";
+		for (auto &header : request.headers()) {
+			os << header.first << ": " << header.second << "\r\n";
+		}
+		os << "\r\n";
+		os << request.body();
+
+		return os;
+	}
+
+	std::string to_string() const {
+		std::ostringstream oss;
+
+		oss << this;
+
+		return oss.str();
+	}
 };
 
 class HTTPResponse : public HTTPMessage {
@@ -191,13 +184,32 @@ private:
 	HTTPStatusCode status_code_;
 
 public:
-	HTTPResponse(HTTPStatusCode status_code, HTTPVersion version) {
-		this->status_code_ = status_code;
+	HTTPResponse(HTTPStatusCode status_code, HTTPVersion version) : status_code_(status_code) {
 		this->version_ = version;
 		this->body_ = "";
 	}
 
 	HTTPStatusCode status_code() const { return status_code_; }
+
+	friend std::ostream &operator<<(std::ostream &os, const HTTPResponse &response) {
+		os << HTTP_VERSION_STRINGS[response.version()] << " "
+				<< status_code_to_string(response.status_code()) << "\r\n";
+		for (auto &header : response.headers()) {
+			os << header.first << ": " << header.second << "\r\n";
+		}
+		os << "\r\n";
+		os << response.body();
+
+		return os;
+	}
+
+	std::string to_string() const {
+		std::ostringstream oss;
+
+		operator<<(oss, *this);
+
+		return oss.str();
+	}
 };
 
 #endif // WEBSERVER_MESSAGE_HPP

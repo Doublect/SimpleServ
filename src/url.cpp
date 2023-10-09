@@ -86,7 +86,6 @@ inline std::string percent_encode(std::string str) {
 		case ('@'):
 		case ('['):
 		case (']'):
-			// case('的'):
 			encoded += "%" + std::to_string(static_cast<int>(str[i]));
 			break;
 

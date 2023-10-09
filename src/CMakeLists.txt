@@ -35,6 +35,18 @@ endif()
 #     message(STATUS "Brotli library not found.")
 # endif()
 
+set(Boost_USE_STATIC_LIBS OFF) 
+set(Boost_USE_MULTITHREADED ON)  
+set(Boost_USE_STATIC_RUNTIME OFF) 
+
+find_package(Boost 1.83.0 COMPONENTS asio)
+
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS}) 
+else()
+		message(STATUS "Boost library not found.")
+endif()
+
 find_package(WolfSSL REQUIRED)
 #find_package(Brotli REQUIRED)
 
@@ -59,8 +71,9 @@ set(WOLFSSL_EXAMPLES OFF)
 set(WOLFSSL_CRYPT_TESTS OFF)
 set(WOLFSSL_USER_SETTINGS ON)
 
-add_library(server SHARED)
-target_link_libraries(server PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc)
+file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
+add_library(server SHARED ${HEADERS})
+target_link_libraries(server PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc ${Boost_LIBRARIES})
 target_include_directories(server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_sources(server PUBLIC content_coding.cpp file_manager.cpp message.cpp parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
 

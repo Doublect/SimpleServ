@@ -88,7 +88,7 @@ std::expected<HTTPFileData, FileManagerException> FileDiskFetcher<HTTPFileData, 
 	//std::cout << "Requested file: " << full_path << std::endl;
 	//std::cout << "File descriptors: " << file_descriptors.size() << std::endl;
 	if(file_descriptors.find(full_path) == file_descriptors.end()) {
-		return std::unexpected(FileManagerException("File not found"));
+		return std::unexpected(FileManagerException("File not found: " + full_path));
 	}
 
 	FileDescriptor file_descriptor = file_descriptors[full_path];
