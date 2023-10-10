@@ -73,7 +73,7 @@ target_compile_options(server PRIVATE
 -Wwrite-strings
 -Wstack-protector -fstack-protector
 #-Wpadded
-#-Winline
+-Winline
 -Wdisabled-optimization
 
 
@@ -84,7 +84,7 @@ target_compile_options(server PRIVATE
 
 
 -Wlogical-op
-#-Wstack-usage=1024 -fstack-usage # -Wframe-larger-than=1024
+-Wstack-usage=1024 -fstack-usage -Wframe-larger-than=1024
 -Wtrampolines
 -Wvector-operation-performance
 

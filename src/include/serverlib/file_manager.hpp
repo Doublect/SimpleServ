@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 
-enum class FileType {
+enum class FileType : uint8_t {
 	TEXT_HTML,
 	TEXT_CSS,
 	TEXT_JS,
@@ -22,7 +22,7 @@ enum class FileType {
 	FONT_WOFF2
 };
 
-enum class FileEncoding {
+enum class FileEncoding : uint8_t {
 	NONE,
 	BROTLI,
 	DEFLATE,
@@ -110,7 +110,7 @@ private:
 	FileFetcher file_fetcher{};
 	std::unordered_map<std::string, FileCacheEntry> file_cache;
 	std::mutex file_access_mutex;
-	int max_cache_size_bytes = 10000000;
+	uint32_t max_cache_size_bytes = 10000000;
 
 public: 
 	FileFetcher *get_file_fetcher() {

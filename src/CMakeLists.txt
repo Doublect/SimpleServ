@@ -54,7 +54,7 @@ include(FetchContent)
 FetchContent_Declare(
   libzippp	
   GIT_REPOSITORY https://github.com/ctabin/libzippp.git
-  GIT_TAG        libzippp-v6.1-1.9.2
+  GIT_TAG        libzippp-v7.0-1.10.1
 )
 FetchContent_MakeAvailable(libzippp)
 
@@ -62,7 +62,7 @@ include(FetchContent)
 FetchContent_Declare(
   brotli	
   GIT_REPOSITORY https://github.com/google/brotli
-  GIT_TAG        v1.0.9
+  GIT_TAG        v1.1.0
 )
 FetchContent_MakeAvailable(brotli)
 
@@ -75,7 +75,7 @@ file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 add_library(server SHARED ${HEADERS})
 target_link_libraries(server PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc ${Boost_LIBRARIES})
 target_include_directories(server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-target_sources(server PUBLIC content_coding.cpp file_manager.cpp message.cpp parser.cpp request_handler.cpp server.cpp http.cpp url.cpp)
+target_sources(server PUBLIC content_coding.cpp file_manager.cpp message.cpp parser.cpp request_handler.cpp http.cpp url.cpp)
 
 add_executable(serverexec main.cpp)
 target_link_libraries(serverexec PRIVATE server)

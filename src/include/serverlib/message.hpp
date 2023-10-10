@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cstdint>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -86,7 +87,7 @@ constexpr HTTPMethod method_string_to_enum(const char *&str) {
 	throw std::runtime_error("Invalid HTTP method string: " + std::string(str));
 }
 
-enum HTTPVersion { HTTP_1_0, HTTP_1_1, HTTP_2_0, HTTP_INVALID };
+enum HTTPVersion : uint8_t { HTTP_1_0, HTTP_1_1, HTTP_2_0, HTTP_INVALID };
 
 constexpr const char *HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
 																						 "HTTP/2.0"};

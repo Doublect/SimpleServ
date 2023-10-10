@@ -8,6 +8,22 @@
 #include <iterator>
 #include <fstream>
 
+constexpr std::string write_to_file(const std::string& path, const std::string& filename, const std::string& output_prefix, const std::vector<uint8_t>& output_vec) {
+	std::string output_path;
+	if(output_prefix == "") {
+		output_path = path + "/" + filename + ".br";
+	} else {
+		output_path = output_prefix + "/" + path + "/" + filename + ".br";
+	}
+
+	// Write to file
+	std::ofstream output_file(output_path, std::ios::out | std::ios::binary);
+	std::copy(output_vec.begin(), output_vec.end(), std::ostreambuf_iterator<char>(output_file));
+
+	return output_path;
+};
+
+
 // TODO: Add stream support
 std::string Brotli::encode(const std::string& path, const std::string& filename, const std::string& output_prefix) {
 	//std::cout << "Opening file... " << path + "/" + filename << std::endl;
@@ -30,18 +46,7 @@ std::string Brotli::encode(const std::string& path, const std::string& filename,
 		//std::cout << "Writing to file a size of " << output_size << std::endl;
 		// Write compressed buffer to file
 		std::vector<uint8_t> output_vec(output, output + output_size);
-		std::string output_path;
-		
-		if(output_prefix == "") {
-			output_path = path + "/" + filename + ".br";
-		} else {
-			output_path = output_prefix + "/" + path + "/" + filename + ".br";
-		}
-
-		std::ofstream output_file(output_path, std::ios::out | std::ios::binary);
-		std::copy(output_vec.begin(), output_vec.end(), std::ostreambuf_iterator<char>(output_file));
-
-		return output_path;
+		return write_to_file(path, filename, output_prefix, output_vec);
 	}
 
 

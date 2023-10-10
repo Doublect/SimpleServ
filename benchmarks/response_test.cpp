@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include<serverlib/server.hpp>
+#include<serverlib/socket_layer/http_handler.hpp>
 
 #include<string>
 
@@ -13,8 +13,8 @@ class Setup
 {
 	Setup()	
 	{
-		Server::file_manager.construct_file_descriptors("../webdir");
-		Server::file_manager.generate_encoded_files();
+		file_manager.construct_file_descriptors("../webdir");
+		file_manager.generate_encoded_files();
 	}
 
 public:
@@ -27,10 +27,10 @@ public:
 void BM_EmptyRequest(benchmark::State& state) {
 	Setup::PerformSetup();
 	std::string input = "";
-	HTTPServer server;
+	HTTPHandler handler;
 
 	for(auto _ : state) {
-		server.process_request(input);
+		handler.handle(input);
 	}
 }
 
@@ -39,10 +39,10 @@ BENCHMARK(BM_EmptyRequest);
 void BM_SimpleFileRequest(benchmark::State& state) {
 	Setup::PerformSetup();
 	std::string input = "GET /a.html HTTP/1.1\r\n\r\n";
-	HTTPServer server;
+	HTTPHandler handler;
 
 	for(auto _ : state) {
-		server.process_request(input);
+		handler.handle(input);
 	}
 }
 
@@ -50,10 +50,10 @@ BENCHMARK(BM_SimpleFileRequest);
 
 void BM_SimpleFileRequestWithCompression(benchmark::State& state) {
 	std::string input = "GET /a.html HTTP/1.1\r\nAccept-Encoding: gzip\r\n\r\n";
-	HTTPServer server;
+	HTTPHandler handler;
 
 	for(auto _ : state) {
-		server.process_request(input);
+		handler.handle(input);
 	}
 }
 
@@ -74,10 +74,10 @@ Sec-Fetch-Dest: document\r\n\
 Sec-Fetch-Mode: navigate\r\n\
 Sec-Fetch-Site: none\r\n\
 Sec-Fetch-User: ?1\r\n";
-	HTTPServer server;
+	HTTPHandler handler;
 
 	for(auto _ : state) {
-		server.process_request(input);
+		handler.handle(input);
 	}
 }
 

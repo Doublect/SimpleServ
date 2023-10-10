@@ -3,11 +3,13 @@
 
 #include "message.hpp"
 
+#include <cstdint>
+
 HTTPResponse options_request(const HTTPRequest& request);
 
 // GET request handling
 
-enum class GETResultState { OK, NOT_FOUND, ERROR, MOVED_PERMANENTLY };
+enum class GETResultState : uint8_t { OK, NOT_FOUND, ERROR, MOVED_PERMANENTLY };
 
 struct GETResult {
 	GETResultState state;
@@ -39,7 +41,7 @@ template <HEADRequestHandler T>
 HTTPResponse head_request(const HTTPRequest& request);
 
 // POST request handling
-enum class POSTResultState { OK, CREATED, NO_CONTENT, SEE_OTHER, ERROR };
+enum class POSTResultState : uint8_t { OK, CREATED, NO_CONTENT, SEE_OTHER, ERROR };
 
 struct POSTResult;
 
@@ -50,7 +52,7 @@ concept POSTRequestHandler = std::is_base_of<IPOSTRequestHandler, T>::value;
 
 // PUT request handling
 
-enum class PUTResult { OK, NOT_FOUND, ERROR, MOVED_PERMANENTLY, UNIMPLEMENTED };
+enum class PUTResult : uint8_t { OK, NOT_FOUND, ERROR, MOVED_PERMANENTLY, UNIMPLEMENTED };
 
 class IPUTRequestHandler;
 
@@ -62,7 +64,7 @@ HTTPResponse put_request(const HTTPRequest& request);
 
 // DELETE request handling
 
-enum class DELETEResult { DELETED, DELETE_ACCEPTED, NOT_FOUND, ERROR };
+enum class DELETEResult : uint8_t { DELETED, DELETE_ACCEPTED, NOT_FOUND, ERROR };
 
 class IDELETERequestHandler;
 

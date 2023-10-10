@@ -2,12 +2,16 @@
 #define HTTP_HPP
 
 #include <algorithm>
+#include <cstdint>
 #include <expected>
 #include <iostream>
 #include <map>
 #include <string>
 
-enum HTTPMethod { GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, INVALID };
+enum HTTPMethod : uint8_t
+{ 
+	GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, INVALID 
+};
 
 enum HTTPStatusCode {
 	CONTINUE = 100,
