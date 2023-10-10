@@ -59,7 +59,7 @@ webdir/
 certs/
 *.gz
 
-server
+
 unit_tests
 
 # Ninja files
