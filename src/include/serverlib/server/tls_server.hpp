@@ -1,7 +1,10 @@
 #ifndef WEBSERVER_TLS_SERVER_HPP
 #define WEBSERVER_TLS_SERVER_HPP
 
-#include "../server.hpp"
+#include "serverlib/request_processing/connection_handler.hpp"
+#include "serverlib/request_processing/threadpool.hpp"
+#include "serverlib/request_processing/tls_connection.hpp"
+#include "serverlib/server.hpp"
 #include "http_handler.hpp"
 
 #include <arpa/inet.h>
@@ -84,6 +87,8 @@ namespace server {
 						the file.\n");
 				exit(EXIT_FAILURE);
 			}
+
+			_threadpool.Start();
 		};
 
 		void Stop() {
@@ -107,6 +112,8 @@ namespace server {
 
 		WOLFSSL_CTX* ctx;
 		WOLFSSL* ssl;
+
+		request_processing::Threadpool<4, request_processing::HTTPSConnectionObject, request_processing::ThreadpoolConnectionHandler<HTTPHandler, request_processing::HTTPSConnectionObject, request_processing::TLSSender, request_processing::TLSCloser>> _threadpool;
 
 		void AcceptIncoming() {
 			socklen_t addr_size = sizeof(their_addr);
@@ -144,22 +151,9 @@ namespace server {
 
 					buf[numbytes] = '\0';
 
-					if (numbytes > 0) {
-						std::string request_str{buf};
-						auto response = Handler::handle(request_str);
-					
-						if (response.has_value()) {
-							int err;
-							do {
-								ret = wolfSSL_write(ssl, response.value().c_str(),
-																		static_cast<int>(response.value().length()));
-								err = wolfSSL_get_error(ssl, ret);
-							} while (err == WOLFSSL_ERROR_WANT_WRITE);
-							wolfSSL_shutdown(ssl);
-							wolfSSL_free(ssl); /* Free the wolfSSL object              */
-							ssl = NULL;
-						}
-					}
+					std::string request_str{buf};
+
+					_threadpool.add_task(request_processing::HTTPSConnectionObject{.client_fd = client_fd, .ssl = ssl, .request = request_str});
 				}
 			}
 		};

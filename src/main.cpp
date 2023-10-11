@@ -18,17 +18,18 @@ using namespace std::literals::string_literals;
 ServerManager server_manager;
 
 int main() {
-	file_manager.construct_file_descriptors("../webdir");
-	file_manager.generate_encoded_files();
+	server::file_manager.construct_file_descriptors("../webdir");
+	server::file_manager.generate_encoded_files();
 
 	// server_manager = ServerManager(
 	// 		std::vector{ServerConfig{"HTTP"s, ServerType::HTTP, "80"s},
 	// 		ServerConfig{"HTTPS"s, ServerType::HTTPS, "443"s}});
-	std::cout << "Starting HTTP server..." << std::endl;
-	TCPServer<HTTPHandler> server{8080};
-	TLSServer<HTTPHandler> server_tls{443};
+	// std::cout << "Starting HTTP server..." << std::endl;
+	// server::TCPServer<server::HTTPHandler> server{80};
+	std::cout << "Starting HTTPS server..." << std::endl;
+	server::TLSServer<server::HTTPHandler> server_tls{443};
 
-	//server.Start();
+	// server.Start();
 	server_tls.Start();
 
 	signal(SIGINT, signal_handler);
@@ -37,7 +38,7 @@ int main() {
 
 	std::unique_lock<std::mutex> lock(exit_mutex);
 
-	//server.Open();
+	// server.Open();
 	server_tls.Open();
 	exit_signal.wait(lock);
 

@@ -50,13 +50,13 @@ public:
 
 	// const std::string& get_port_str() { return server->get_port_str(); }
 	void startup() {
-		//server->startup();
+		// server->startup();
 	}
 	std::thread receive_connection() {
-		//return std::thread(&Server::receive_connection, server);
+		// return std::thread(&Server::receive_connection, server);
 	}
 	void close_connection() {
-		//server->close_connection();
+		// server->close_connection();
 	}
 };
 

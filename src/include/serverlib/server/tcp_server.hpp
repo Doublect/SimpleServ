@@ -1,7 +1,10 @@
 #ifndef WEBSERVER_TCP_SERVER_HPP
 #define WEBSERVER_TCP_SERVER_HPP
 
-#include "../server.hpp"
+#include "serverlib/request_processing/connection_handler.hpp"
+#include "serverlib/request_processing/tcp_connection.hpp"
+#include "serverlib/request_processing/threadpool.hpp"
+#include "serverlib/server.hpp"
 #include "http_handler.hpp"
 
 #include <arpa/inet.h>
@@ -21,8 +24,8 @@ namespace server {
 	template<IHandler Handler>
 	class TCPServer : public std::enable_shared_from_this<TCPServer<Handler>> {
 	public:
-		TCPServer() : _port(HTTP_PORT) {}
-		TCPServer(int&& port_str) : _port(port_str) {}
+		TCPServer() : _port(HTTP_PORT), _threadpool() {}
+		TCPServer(int&& port_str) : _port(port_str), _threadpool() {}
 
 		~TCPServer() { this->Stop(); }
 
@@ -52,6 +55,8 @@ namespace server {
 				std::cout << "Error listening on socket" << std::endl;
 				exit(1);
 			}
+
+			_threadpool.Start();
 		};
 
 		void Stop() {
@@ -70,6 +75,8 @@ namespace server {
 		struct addrinfo hints, *res;
 		struct sockaddr_storage their_addr;
 		int sockfd, client_fd;
+
+		request_processing::Threadpool<4, request_processing::HTTPConnectionObject, request_processing::ThreadpoolConnectionHandler<HTTPHandler, request_processing::HTTPConnectionObject, request_processing::TCPSender, request_processing::TCPCloser>> _threadpool;
 
 		void AcceptIncoming() {
 			socklen_t addr_size = sizeof(their_addr);
@@ -95,14 +102,8 @@ namespace server {
 					buf[numbytes] = '\0';
 
 					std::string request_str{buf};
-					std::cout << "Received HTTP request: " << numbytes << std::endl;
-					auto response = Handler::handle(request_str);
 					
-					if (response.has_value()) {
-						send(client_fd, response.value().c_str(), response.value().length(), 0);
-					}
-					
-					close(client_fd);
+					_threadpool.add_task(request_processing::HTTPConnectionObject{.client_fd = client_fd, .request = request_str});
 				}
 			}
 		};

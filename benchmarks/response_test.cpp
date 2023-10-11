@@ -4,6 +4,8 @@
 
 #include<string>
 
+using namespace server;
+
 void BM_EmptyRequest(benchmark::State& state);
 void BM_SimpleFileRequest(benchmark::State& state);
 void BM_SimpleFileRequestWithCompression(benchmark::State& state);

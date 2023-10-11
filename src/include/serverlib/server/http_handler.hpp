@@ -1,8 +1,8 @@
 #ifndef WEBSERVER_HTTP_HANDLER_HPP
 #define WEBSERVER_HTTP_HANDLER_HPP
 
-#include "../file_manager.hpp"
-#include "../parser.hpp"
+#include "serverlib/file_manager.hpp"
+#include "serverlib/parser.hpp"
 
 #include <csignal>
 #include <filesystem>
@@ -73,4 +73,5 @@ namespace server {
 			}
 	};
 } // namespace server
+
 #endif // WEBSERVER_HTTP_HANDLER_HPP
