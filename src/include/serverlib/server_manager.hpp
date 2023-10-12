@@ -1,28 +1,31 @@
 #ifndef WEBSERVER_SERVER_MANAGER_HPP
 #define WEBSERVER_SERVER_MANAGER_HPP
 
-#include "server/tcp_server.hpp"
+#include "erverlib/server/tcp_server.hpp"
+#include "serverlib/server/tls_server.hpp"
+#include "serverlib/server/server.hpp"
 #include "file_manager.hpp"
-#include "server.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <thread>
 #include <vector>
 
 struct ServerConfig {
 	std::string name;
-	ServerType serverType;
-	std::string port;
+	server::ServerType serverType;
+	uint32_t port;
 };
 
 struct ServerUnit {
 	std::string name;
-	ServerFacade server;
+	server::Server &server;
 };
 
 class ServerManager {
+	std::vector<server::Server *> servers_raw;
+	std::vector<std::jthread> server_threads;
 	std::vector<ServerUnit> servers;
-	std::vector<std::thread> server_threads;
 
 public:
 	ServerManager() = default;
@@ -34,44 +37,51 @@ public:
 
 	ServerManager(std::vector<ServerConfig> configs) {
 		for (auto& server : configs) {
-			this->servers.push_back(ServerUnit {server.name, ServerFacade(configure_server(server))});
+			server::Server *server_ptr = configure_server(server);
+			servers_raw.push_back(server_ptr);
+			this->servers.push_back(ServerUnit {server.name, *server_ptr});
 		}
 
-		startup();
-		open();
+		Start();
+		Open();
 	}
+
 	~ServerManager() {
-		for (auto& server_unit : servers) {
-			server_unit.server.close_connection();
+		for (auto& server_thread : server_threads) {
+			server_thread.request_stop();
 		}
 
 		for (auto& server_thread : server_threads) {
-			server_thread.~thread();
+			server_thread.join();
+		}
+
+		for (auto& server_unit : servers) {
+			server_unit.server.Stop();
 		}
 	}
 
-	void startup() {
+	void Start() {
 		for (auto& server_unit : servers) {
 			std::cout << "Starting " << server_unit.name << " server..." << std::endl;
-			server_unit.server.startup();
+			server_unit.server.Start();
 		}
 	}
 
-	void open() {
+	void Open() {
 		for (auto& server_unit : servers) {
-			std::cout << "Opening " << server_unit.name << " server on port nil" << std::endl;
-
-			server_threads.push_back(server_unit.server.receive_connection());
+			std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server.port_() << std::endl;
+			
+			server_threads.push_back(std::jthread([&server_unit](std::stop_token stoken) { server_unit.server.Open(stoken); }));
 		}
 	}
 
 private: 
-	constexpr Server *configure_server(const ServerConfig& config) {
+	constexpr server::Server *configure_server(const ServerConfig& config) {
 		switch (config.serverType) {
-			case ServerType::HTTP:
-				return new HTTPServer(config.port);
-			case ServerType::HTTPS:
-				return new HTTPSServer(config.port);
+			case server::ServerType::HTTP:
+				return new server::TCPServer<server::HTTPHandler>(config.port);
+			case server::ServerType::HTTPS:
+				return new server::TLSServer<server::HTTPHandler>(config.port);
 			default:
 				throw std::runtime_error("Invalid server type");
 		}

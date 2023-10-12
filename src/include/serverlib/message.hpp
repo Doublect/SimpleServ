@@ -11,10 +11,6 @@
 #include <stdexcept>
 #include <string>
 
-constexpr const char *HTTP_METHOD_STRINGS[] = {
-		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
-
-
 #define EXPECT_SW(str, char)\
 	if(*str != char || *str == '\0') {\
 		break;\

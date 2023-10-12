@@ -13,6 +13,9 @@ enum HTTPMethod : uint8_t
 	GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, INVALID 
 };
 
+constexpr const char *HTTP_METHOD_STRINGS[] = {
+		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
+
 enum HTTPStatusCode {
 	CONTINUE = 100,
 	SWITCHING_PROTOCOLS = 101,
@@ -36,6 +39,8 @@ enum HTTPStatusCode {
 };
 
 static std::string HTTP_RESPONSE_STATUS[] = {
+	"100 Continue",
+	"101 Switching Protocols",
 	"200 OK",
 	"201 Created",
 	"202 Accepted",

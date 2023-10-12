@@ -1,6 +1,6 @@
 #include "include/serverlib/file_manager.hpp"
 
-#include "include/serverlib/content_coding.hpp"
+#include "include/serverlib/utility/content_coding.hpp"
 
 #include <iostream>
 #include <filesystem>

@@ -4,7 +4,7 @@
 #include "serverlib/request_processing/connection_handler.hpp"
 #include "serverlib/request_processing/threadpool.hpp"
 #include "serverlib/request_processing/tls_connection.hpp"
-#include "serverlib/server.hpp"
+#include "serverlib/server/server.hpp"
 #include "http_handler.hpp"
 
 #include <arpa/inet.h>
@@ -18,15 +18,19 @@
 #include <wolfssl/ssl.h>
 
 #define MAXBUFLEN 4096
-#define HTTP_PORT 80
+#define HTTPS_PORT 443
 
 namespace server {
 
 	template<IHandler Handler>
-	class TLSServer : public std::enable_shared_from_this<TLSServer<Handler>> {
+	class TLSServer : public Server, public std::enable_shared_from_this<TLSServer<Handler>> {
 	public:
-		TLSServer() : _port(HTTP_PORT) {}
-		TLSServer(int&& port_str) : _port(port_str) {}
+		TLSServer() {
+			_port = HTTPS_PORT;
+		}
+		TLSServer(int&& port_str) {
+			_port = port_str;
+		}
 
 		~TLSServer() { this->Stop(); }
 
@@ -40,6 +44,7 @@ namespace server {
 
 			// make a socket
 			sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+			fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 			if (sockfd == -1) {
 				std::cout << "Error creating socket" << std::endl;
@@ -98,12 +103,11 @@ namespace server {
 			wolfSSL_Cleanup();
 		};
 
-		void Open() {
-			AcceptIncoming();
+		void Open(std::stop_token stoken) {
+			AcceptIncoming(stoken);
 		}
 
 	private:
-		int _port;
 		std::atomic<bool> _started;
 
 		struct addrinfo hints, *res;
@@ -115,11 +119,14 @@ namespace server {
 
 		request_processing::Threadpool<4, request_processing::HTTPSConnectionObject, request_processing::ThreadpoolConnectionHandler<HTTPHandler, request_processing::HTTPSConnectionObject, request_processing::TLSSender, request_processing::TLSCloser>> _threadpool;
 
-		void AcceptIncoming() {
+		void AcceptIncoming(std::stop_token stoken) {
 			socklen_t addr_size = sizeof(their_addr);
 
+			std::cout << "Waiting for connection..." << std::endl;
 			while (true) {
-				std::cout << "Waiting for connection..." << std::endl;
+				if(stoken.stop_requested()) {
+					return;
+				}
 				client_fd = accept4(sockfd, reinterpret_cast<sockaddr *>(&their_addr),
 														&addr_size, SOCK_NONBLOCK);
 				if (!(client_fd == -1 && (errno == EAGAIN))) {

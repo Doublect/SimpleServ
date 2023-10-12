@@ -1,7 +1,7 @@
 #ifndef WEBSERVER_FILE_MANAGER_HPP
 #define WEBSERVER_FILE_MANAGER_HPP
 
-#include "content_coding.hpp"
+#include "utility/content_coding.hpp"
 
 #include <expected>
 #include <filesystem>
@@ -160,7 +160,7 @@ public:
 			if(file_descriptor.filetype == FileType::TEXT_HTML ||
 					file_descriptor.filetype == FileType::TEXT_CSS ||
 					file_descriptor.filetype == FileType::TEXT_JS) {
-				Brotli brotli;
+				utility::Brotli brotli;
 				std::filesystem::path dir_path(path);
 				std::string file_path = brotli.encode(dir_path.parent_path(), file_descriptor.filename, encoded_file_prefix);
 
@@ -193,5 +193,27 @@ public:
 		(file_fetcher.get_file_fetcher())->generate_encoded_files();
 	}
 };
+
+// TODO: filetype recognition
+constexpr bool is_extension(std::string_view str, std::string_view extension) {
+	size_t len = extension.length();
+
+	if (str.length() < len)
+		return false;
+	return str.substr(str.length() - len, len) == extension;
+}
+
+static std::string supported_extensions[]{".html",  ".js",  ".css", ".png",
+																					".jpg",   ".svg", ".ttf", ".woff",
+																					".woff2", ".ico"};
+
+constexpr bool is_supported_extension(std::string_view str) {
+	for (int i = 0; i < 9; i++) {
+		if (is_extension(str, supported_extensions[i]))
+			return true;
+	}
+
+	return false;
+}
 
 #endif //WEBSERVER_FILE_MANAGER_HPP

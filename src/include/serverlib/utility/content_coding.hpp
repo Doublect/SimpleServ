@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <string>
 
+namespace utility {
+
 class Brotli {
 public:
 	Brotli() = default;
@@ -30,5 +32,7 @@ public:
 	void encode_directory(const std::string& path);
 	//void decompress();
 };
+
+}; // namespace utility
 
 #endif //WEBSERVER_CONTENT_CODING_HPP

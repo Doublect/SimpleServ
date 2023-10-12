@@ -2,7 +2,6 @@
 #include "include/serverlib/server/tcp_server.hpp"
 #include "include/serverlib/server/tls_server.hpp"
 #include "include/serverlib/server_manager.hpp"
-#include "include/serverlib/content_coding.hpp"
 #include "include/serverlib/file_manager.hpp"
 
 #include <condition_variable>
@@ -17,20 +16,22 @@ std::mutex exit_mutex;
 using namespace std::literals::string_literals;
 ServerManager server_manager;
 
+[[noreturn]] void signal_handler(int signum);
+
 int main() {
 	server::file_manager.construct_file_descriptors("../webdir");
 	server::file_manager.generate_encoded_files();
 
-	// server_manager = ServerManager(
-	// 		std::vector{ServerConfig{"HTTP"s, ServerType::HTTP, "80"s},
-	// 		ServerConfig{"HTTPS"s, ServerType::HTTPS, "443"s}});
+	server_manager = ServerManager(
+			std::vector{ServerConfig{"HTTP"s, server::ServerType::HTTP, 80},
+			ServerConfig{"HTTPS"s, server::ServerType::HTTPS, 443}});
 	// std::cout << "Starting HTTP server..." << std::endl;
 	// server::TCPServer<server::HTTPHandler> server{80};
-	std::cout << "Starting HTTPS server..." << std::endl;
-	server::TLSServer<server::HTTPHandler> server_tls{443};
+	// std::cout << "Starting HTTPS server..." << std::endl;
+	// server::TLSServer<server::HTTPHandler> server_tls{443};
 
 	// server.Start();
-	server_tls.Start();
+	// server_tls.Start();
 
 	signal(SIGINT, signal_handler);
 	signal(SIGABRT, signal_handler);
@@ -39,7 +40,7 @@ int main() {
 	std::unique_lock<std::mutex> lock(exit_mutex);
 
 	// server.Open();
-	server_tls.Open();
+	// server_tls.Open();
 	exit_signal.wait(lock);
 
 	return 0;

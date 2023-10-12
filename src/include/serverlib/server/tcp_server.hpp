@@ -4,11 +4,12 @@
 #include "serverlib/request_processing/connection_handler.hpp"
 #include "serverlib/request_processing/tcp_connection.hpp"
 #include "serverlib/request_processing/threadpool.hpp"
-#include "serverlib/server.hpp"
+#include "serverlib/server/server.hpp"
 #include "http_handler.hpp"
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -22,10 +23,14 @@ namespace server {
 	#define HTTP_PORT 80
 
 	template<IHandler Handler>
-	class TCPServer : public std::enable_shared_from_this<TCPServer<Handler>> {
+	class TCPServer : public Server, public std::enable_shared_from_this<TCPServer<Handler>> {
 	public:
-		TCPServer() : _port(HTTP_PORT), _threadpool() {}
-		TCPServer(int&& port_str) : _port(port_str), _threadpool() {}
+		TCPServer() : _threadpool() {
+			_port = HTTP_PORT;
+		}
+		TCPServer(int&& port_str) : _threadpool() {
+			_port = port_str;
+		}
 
 		~TCPServer() { this->Stop(); }
 
@@ -39,6 +44,7 @@ namespace server {
 
 			// make a socket
 			sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+			fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 			if (sockfd == -1) {
 				std::cout << "Error creating socket" << std::endl;
@@ -64,12 +70,11 @@ namespace server {
 			close(sockfd);
 		};
 
-		void Open() {
-			AcceptIncoming();
+		void Open(std::stop_token stoken) {
+			AcceptIncoming(stoken);
 		}
 
 	private:
-		int _port;
 		std::atomic<bool> _started;
 
 		struct addrinfo hints, *res;
@@ -78,11 +83,14 @@ namespace server {
 
 		request_processing::Threadpool<4, request_processing::HTTPConnectionObject, request_processing::ThreadpoolConnectionHandler<HTTPHandler, request_processing::HTTPConnectionObject, request_processing::TCPSender, request_processing::TCPCloser>> _threadpool;
 
-		void AcceptIncoming() {
+		void AcceptIncoming(std::stop_token stoken) {
 			socklen_t addr_size = sizeof(their_addr);
 
+			std::cout << "Waiting for connection..." << std::endl;
 			while (true) {
-				std::cout << "Waiting for connection..." << std::endl;
+				if(stoken.stop_requested()) {
+					return;
+				}
 				client_fd = accept4(sockfd, reinterpret_cast<sockaddr *>(&their_addr),
 														&addr_size, SOCK_NONBLOCK);
 				if (!(client_fd == -1 && (errno == EAGAIN))) {
