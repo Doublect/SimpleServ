@@ -1,8 +1,10 @@
 #include <benchmark/benchmark.h>
 
-#include<serverlib/parser.hpp>
+#include<serverlib/http/parser.hpp>
 
 #include<string>
+
+using namespace http;
 
 void BM_ParseEmptyInput(benchmark::State& state);
 void BM_ParseOnlyRequest(benchmark::State& state);
