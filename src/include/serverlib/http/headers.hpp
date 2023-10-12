@@ -1,7 +1,8 @@
 #ifndef WEBSERVER_HTTP_HEADERS_HPP
 #define WEBSERVER_HTTP_HEADERS_HPP
 
-#include <string>
+#include <map>
+#include <string_view>
 
 namespace http {
 	enum class FieldType {
@@ -9,256 +10,316 @@ namespace http {
 	};
 
 	struct Header {
-		std::string name;
+		const std::string_view name;
 		FieldType field;
 	};
 
 #pragma region General Headers
-	class CacheControl : public Header {
-		std::string name = "Cache-Control";
-		FieldType field = FieldType::String;
+	constexpr Header CacheControl = Header {
+		.name = "Cache-Control",
+		.field = FieldType::String
 	};
 
-	class Connection : public Header {
-		std::string name = "Connection";
-		FieldType field = FieldType::String;
+	constexpr Header Connection = Header {
+		.name = "Connection",
+		.field = FieldType::String
 	};
 
-	class Date : public Header {
-		std::string name = "Date";
-		FieldType field = FieldType::String;
+	constexpr Header Date = Header {
+		.name = "Date",
+		.field = FieldType::String
 	};
 
-	class Pragma : public Header {
-		std::string name = "Pragma";
-		FieldType field = FieldType::String;
+	constexpr Header Pragma = Header {
+		.name = "Pragma",
+		.field = FieldType::String
 	};
 
-	class Trailer : public Header {
-		std::string name = "Trailer";
-		FieldType field = FieldType::String;
+	constexpr Header Trailer = Header {
+		.name = "Trailer",
+		.field = FieldType::String
 	};
 
-	class TransferEncoding : public Header {
-		std::string name = "Transfer-Encoding";
-		FieldType field = FieldType::String;
+	constexpr Header TransferEncoding = Header {
+		.name = "Transfer-Encoding",
+		.field = FieldType::String
 	};
 
-	class Upgrade : public Header {
-		std::string name = "Upgrade";
-		FieldType field = FieldType::String;
+	constexpr Header Upgrade = Header {
+		.name = "Upgrade",
+		.field = FieldType::String
 	};
 
-	class Via : public Header {
-		std::string name = "Via";
-		FieldType field = FieldType::String;
+	constexpr Header Via = Header {
+		.name = "Via",
+		.field = FieldType::String
 	};
 
-	class Warning : public Header {
-		std::string name = "Warning";
-		FieldType field = FieldType::String;
+	constexpr Header Warning = Header {
+		.name = "Warning",
+		.field = FieldType::String
 	};
 
 #pragma endregion
 
 #pragma region Request Headers
-	class Accept : public Header {
-		std::string name = "Accept";
-		FieldType field = FieldType::String;
+	constexpr Header Accept = Header {
+		.name = "Accept",
+		.field = FieldType::String
 	};
 
-	class AcceptCharset : public Header {
-		std::string name = "Accept-Charset";
-		FieldType field = FieldType::String;
+	constexpr Header AcceptCharset = Header {
+		.name = "Accept-Charset",
+		.field = FieldType::String
 	};
 
-	class AcceptEncoding : public Header {
-		std::string name = "Accept-Encoding";
-		FieldType field = FieldType::String;
+	constexpr Header AcceptEncoding = Header {
+		.name = "Accept-Encoding",
+		.field = FieldType::String
 	};
 
-	class AcceptLanguage : public Header {
-		std::string name = "Accept-Language";
-		FieldType field = FieldType::String;
+	constexpr Header AcceptLanguage = Header {
+		.name = "Accept-Language",
+		.field = FieldType::String
 	};
 
-	class Authorization : public Header {
-		std::string name = "Authorization";
-		FieldType field = FieldType::String;
+	constexpr Header Authorization = Header {
+		.name = "Authorization",
+		.field = FieldType::String
 	};
 
-	class Expect : public Header {
-		std::string name = "Expect";
-		FieldType field = FieldType::String;
+	constexpr Header Expect = Header {
+		.name = "Expect",
+		.field = FieldType::String
 	};
 
-	class From : public Header {
-		std::string name = "From";
-		FieldType field = FieldType::String;
+	constexpr Header From = Header {
+		.name = "From",
+		.field = FieldType::String
 	};
 
-	class Host : public Header {
-		std::string name = "Host";
-		FieldType field = FieldType::String;
+	constexpr Header Host = Header {
+		.name = "Host",
+		.field = FieldType::String
 	};
 
-	class IfMatch : public Header {
-		std::string name = "If-Match";
-		FieldType field = FieldType::String;
+	constexpr Header IfMatch = Header {
+		.name = "If-Match",
+		.field = FieldType::String
 	};
 
-	class IfModifiedSince : public Header {
-		std::string name = "If-Modified-Since";
-		FieldType field = FieldType::String;
+	constexpr Header IfModifiedSince = Header {
+		.name = "If-Modified-Since",
+		.field = FieldType::String
 	};
 
-	class IfNoneMatch  : public Header {
-		std::string name = "If-None-Match ";
-		FieldType field = FieldType::String;
+	constexpr Header IfNoneMatch  = Header {
+		.name = "If-None-Match ",
+		.field = FieldType::String
 	};
 
-	class IfRange : public Header {
-		std::string name = "If-Range";
-		FieldType field = FieldType::String;
+	constexpr Header IfRange = Header {
+		.name = "If-Range",
+		.field = FieldType::String
 	};
 
-	class IfUnmodifiedSince : public Header {
-		std::string name = "If-Unmodified-Since";
-		FieldType field = FieldType::String;
+	constexpr Header IfUnmodifiedSince = Header {
+		.name = "If-Unmodified-Since",
+		.field = FieldType::String
 	};
 
-	class MaxForwards : public Header {
-		std::string name = "Max-Forwards";
-		FieldType field = FieldType::String;
+	constexpr Header MaxForwards = Header {
+		.name = "Max-Forwards",
+		.field = FieldType::String
 	};
 
-	class ProxyAuthorization : public Header {
-		std::string name = "Proxy-Authorization";
-		FieldType field = FieldType::String;
+	constexpr Header ProxyAuthorization = Header {
+		.name = "Proxy-Authorization",
+		.field = FieldType::String
 	};
 
-	class Range : public Header {
-		std::string name = "Range";
-		FieldType field = FieldType::String;
+	constexpr Header Range = Header {
+		.name = "Range",
+		.field = FieldType::String
 	};
 
-	class Referer : public Header {
-		std::string name = "Referer";
-		FieldType field = FieldType::String;
+	constexpr Header Referer = Header {
+		.name = "Referer",
+		.field = FieldType::String
 	};
 
-	class TE : public Header {
-		std::string name = "TE";
-		FieldType field = FieldType::String;
+	constexpr Header TE = Header {
+		.name = "TE",
+		.field = FieldType::String
 	};
 
-	class UserAgent : public Header {
-		std::string name = "User-Agent";
-		FieldType field = FieldType::String;
+	constexpr Header UserAgent = Header {
+		.name = "User-Agent",
+		.field = FieldType::String
 	};
 
 #pragma endregion
 
 #pragma region Response Headers
 
-	class AcceptRanges : public Header {
-		std::string name = "Accept-Ranges";
-		FieldType field = FieldType::String;
+	constexpr Header AcceptRanges = Header {
+		.name = "Accept-Ranges",
+		.field = FieldType::String
 	};
 
-	class Age : public Header {
-		std::string name = "Age";
-		FieldType field = FieldType::String;
+	constexpr Header Age = Header {
+		.name = "Age",
+		.field = FieldType::String
 	};
 
-	class ETag : public Header {
-		std::string name = "ETag";
-		FieldType field = FieldType::String;
+	constexpr Header ETag = Header {
+		.name = "ETag",
+		.field = FieldType::String
 	};
 
-	class Location : public Header {
-		std::string name = "Date";
-		FieldType field = FieldType::String;
+	constexpr Header Location = Header {
+		.name = "Date",
+		.field = FieldType::String
 	};
 
-	class ProxyAuthenticate : public Header {
-		std::string name = "Proxy-Authenticate";
-		FieldType field = FieldType::String;
+	constexpr Header ProxyAuthenticate = Header {
+		.name = "Proxy-Authenticate",
+		.field = FieldType::String
 	};
 
-	class RetryAfter : public Header {
-		std::string name = "Retry-After";
-		FieldType field = FieldType::String;
+	constexpr Header RetryAfter = Header {
+		.name = "Retry-After",
+		.field = FieldType::String
 	};
 
-	class Server : public Header {
-		std::string name = "Server";
-		FieldType field = FieldType::String;
+	constexpr Header Server = Header {
+		.name = "Server",
+		.field = FieldType::String
 	};
 
-	class Vary : public Header {
-		std::string name = "Vary";
-		FieldType field = FieldType::String;
+	constexpr Header Vary = Header {
+		.name = "Vary",
+		.field = FieldType::String
 	};
 
-	class WWWAuthenticate : public Header {
-		std::string name = "WWW-Authenticate";
-		FieldType field = FieldType::String;
+	constexpr Header WWWAuthenticate = Header {
+		.name = "WWW-Authenticate",
+		.field = FieldType::String
 	};
 #pragma endregion
 
 #pragma region Entity Headers
 
-	class Allow : public Header {
-		std::string name = "Allow";
-		FieldType field = FieldType::String;
+	constexpr Header Allow = Header {
+		.name = "Allow",
+		.field = FieldType::String
 	};
 
-	class ContentEncoding : public Header {
-		std::string name = "Content-Encoding";
-		FieldType field = FieldType::String;
+	constexpr Header ContentEncoding = Header {
+		.name = "Content-Encoding",
+		.field = FieldType::String
 	};
 
-	class ContentLanguage : public Header {
-		std::string name = "Content-Language";
-		FieldType field = FieldType::String;
+	constexpr Header ContentLanguage = Header {
+		.name = "Content-Language",
+		.field = FieldType::String
 	};
 
-	class ContentLength : public Header {
-		std::string name = "Content-Length";
-		FieldType field = FieldType::String;
+	constexpr Header ContentLength = Header {
+		.name = "Content-Length",
+		.field = FieldType::String
 	};
 
-	class ContentLocation : public Header {
-		std::string name = "Content-Location";
-		FieldType field = FieldType::String;
+	constexpr Header ContentLocation = Header {
+		.name = "Content-Location",
+		.field = FieldType::String
 	};
 
-	class ContentMD5 : public Header {
-		std::string name = "Content-MD5";
-		FieldType field = FieldType::String;
+	constexpr Header ContentMD5 = Header {
+		.name = "Content-MD5",
+		.field = FieldType::String
 	};
 
-	class ContentRange : public Header {
-		std::string name = "Content-Range";
-		FieldType field = FieldType::String;
+	constexpr Header ContentRange = Header {
+		.name = "Content-Range",
+		.field = FieldType::String
 	};
 
-	class ContentType : public Header {
-		std::string name = "Content-Type";
-		FieldType field = FieldType::String;
+	constexpr Header ContentType = Header {
+		.name = "Content-Type",
+		.field = FieldType::String
 	};
 
-	class Expires : public Header {
-		std::string name = "Expires";
-		FieldType field = FieldType::String;
+	constexpr Header Expires = Header {
+		.name = "Expires",
+		.field = FieldType::String
 	};
 
-	class LastModified : public Header {
-		std::string name = "Last-Modified";
-		FieldType field = FieldType::String;
+	constexpr Header LastModified = Header {
+		.name = "Last-Modified",
+		.field = FieldType::String
 	};
 #pragma endregion
-}
 
+	class Headers {
+		const Header _general_headers[9] = {
+			CacheControl,
+			Connection,
+			Date,
+			Pragma,
+			Trailer,
+			TransferEncoding,
+			Upgrade,
+			Via,
+			Warning,
+		};
+
+		const Header _request_headers[18] = {
+			Accept,
+			AcceptCharset,
+			AcceptEncoding,
+			AcceptLanguage,
+			Authorization,
+			Expect,
+			From,
+			IfMatch,
+			IfModifiedSince,
+			IfNoneMatch,
+			IfRange,
+			IfUnmodifiedSince,
+			MaxForwards,
+			ProxyAuthorization,
+			Range,
+			Referer,
+			TE,
+			UserAgent,
+		};
+
+		const Header _response_headers[9]= {
+			AcceptRanges,
+			Age,
+			ETag,
+			Location,
+			ProxyAuthenticate,
+			RetryAfter,
+			Server,
+			Vary,
+			WWWAuthenticate,
+		};
+
+		const Header _entity_headers[10] = {
+			Allow,
+			ContentEncoding,
+			ContentLanguage,
+			ContentLength,
+			ContentLocation,
+			ContentMD5,
+			ContentRange,
+			ContentType,
+			Expires,
+			LastModified,
+		};
+	
+	};
+}
 #endif // WEBSERVER_HTTP_HEADERS_HPP
