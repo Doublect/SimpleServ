@@ -111,7 +111,8 @@
 			"__verbose_abort": "cpp",
 			"ios": "cpp",
 			"locale": "cpp",
-			"filesystem": "cpp"
+			"filesystem": "cpp",
+			"cassert": "cpp"
 		},
     "C_Cpp.default.compileCommands": "builddir/vscode_compile_commands.json",
     "C_Cpp.default.cppStandard": "gnu++23",

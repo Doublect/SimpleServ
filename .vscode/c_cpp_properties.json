@@ -1,17 +1,32 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "GCC",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/build/_deps/googletest-src/googletest/include/**"
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "cStandard": "c23",
-            "cppStandard": "gnu++23",
+            "cppStandard": "c++23",
             "intelliSenseMode": "linux-gcc-x64",
             "configurationProvider": "ms-vscode.makefile-tools",
-            "compilerPath": "/usr/bin/gcc"
+            "compilerPath": "/usr/bin/g++",
+            "compileCommands": "/mnt/nvme0n1p4/Personal/WebServer/build/compile_commands.json",
+            "compilerArgs": []
+        },
+        {
+            "name": "Clang",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.makefile-tools",
+            "compilerPath": "/opt/clang/latest/bin/clang",
+            "compileCommands": "/mnt/nvme0n1p4/Personal/WebServer/build/compile_commands.json",
+            "compilerArgs": []
         }
     ],
     "version": 4

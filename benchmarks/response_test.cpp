@@ -1,10 +1,10 @@
-#include <benchmark/benchmark.h>
+#include<benchmark/benchmark.h>
 
-#include<serverlib/server/http_handler.hpp>
+#include<serverlib/http/http_handler.hpp>
 
 #include<string>
 
-using namespace server;
+using namespace http;
 
 void BM_EmptyRequest(benchmark::State& state);
 void BM_SimpleFileRequest(benchmark::State& state);
