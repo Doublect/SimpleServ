@@ -72,7 +72,7 @@ endif()
 # # add_executable(example ${sources} ${data})
 
 # # # just for example add some compiler flags
-# target_compile_options(server PRIVATE 
+# target_compile_options(simpleserv PRIVATE 
 # -fdiagnostics-color
 
 # -Wfloat-conversion

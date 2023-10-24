@@ -47,7 +47,7 @@ function(simpleserv_setup_dependencies)
 	# 		GITHUB_REPOSITORY google/googletest
 	# 		GIT_TAG origin/main)
 		
-	# 	if(wolfssl_ADDED)
+	# 	if(GTest_ADDED)
 	# 		add_library(GTest::GTest INTERFACE IMPORTED)
 	# 		target_link_libraries(GTest::GTest INTERFACE gtest_main)
 	# 	else()
@@ -58,4 +58,24 @@ function(simpleserv_setup_dependencies)
 	if(NOT TARGET Catch2::Catch2WithMain)
     cpmaddpackage("gh:catchorg/Catch2@3.3.2")
   endif()
+
+	if(NOT TARGET Boost)
+		set(Boost_USE_STATIC_LIBS OFF) 
+		set(Boost_USE_MULTITHREADED ON)  
+		set(Boost_USE_STATIC_RUNTIME OFF) 
+		#find_package(Boost 1.83 COMPONENTS asio)
+
+		if(Boost_FOUND)
+				include_directories(${Boost_INCLUDE_DIRS}) 
+		else()
+		# TODO: configure boost, when no local installation is present
+			cpmaddpackage(
+				NAME Boost
+				VERSION 1.83.0
+				GITHUB_REPOSITORY "boostorg/boost"
+				GIT_TAG "boost-1.83.0"
+			)
+		endif()
+	endif()
+		
 endfunction()

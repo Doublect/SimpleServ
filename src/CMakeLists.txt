@@ -1,6 +1,6 @@
-add_subdirectory(serverlib)
+add_subdirectory(simpleserv)
 
-add_subdirectory(server)
+add_subdirectory(serverexec)
 
 # # find_path(BROTLI_INCLUDE_DIR NAMES decode.h encode.h port.h types.h PATHS /usr/include/brotli)
 # # find_library(BROTLI_LIBRARY NAMES libbrotlicommon.so libbrotlidec.so libbrotlienc.so PATHS /usr/lib)
@@ -57,11 +57,11 @@ add_subdirectory(server)
 # set(WOLFSSL_CRYPT_TESTS OFF)
 # set(WOLFSSL_USER_SETTINGS ON)
 
-# file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/serverlib/*.hpp)
-# add_library(server SHARED ${HEADERS})
-# target_link_libraries(server PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc ${Boost_LIBRARIES})
-# target_include_directories(server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-# target_sources(server PUBLIC content_coding.cpp file_manager.cpp message.cpp request_handler.cpp url.cpp)
+# file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/server/*.hpp)
+# add_library(simpleserv SHARED ${HEADERS})
+# target_link_libraries(simpleserv PUBLIC WolfSSL::WolfSSL libzippp::libzippp brotlienc ${Boost_LIBRARIES})
+# target_include_directories(simpleserv INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+# target_sources(simpleserv PUBLIC content_coding.cpp file_manager.cpp message.cpp request_handler.cpp url.cpp)
 
 # add_executable(serverexec main.cpp)
 # target_link_libraries(serverexec PRIVATE server)
