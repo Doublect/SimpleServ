@@ -135,7 +135,7 @@ public:
 
 	void construct_file_descriptors(const std::string& path) {
 		const std::filesystem::path dir_path(path);
-		//std::cout << "Collecting files from directory: " << dir_path << std::endl;
+		//std::cout << "Collecting files from directory: " << dir_path << "\n";
 		for (auto const& dir_entry : std::filesystem::directory_iterator{dir_path}) {
 			if(dir_entry.is_directory()) {
 				construct_file_descriptors(dir_entry.path().string());
@@ -150,14 +150,14 @@ public:
 								{FileEncoding::NONE, FileEntry{dir_entry.path().string()}}
 						}
 				};
-				//std::cout << "file_descriptors: " << dir_entry.path().string() << std::endl;
+				//std::cout << "file_descriptors: " << dir_entry.path().string() << "\n";
 			}
 		}
 	}
 
 	void generate_encoded_files() {
 		for(const auto& [path, file_descriptor] : file_descriptors) {
-			//std::cout << "Encoding file: " << path << std::endl;
+			//std::cout << "Encoding file: " << path << "\n";
 			if(file_descriptor.filetype == FileType::TEXT_HTML ||
 					file_descriptor.filetype == FileType::TEXT_CSS ||
 					file_descriptor.filetype == FileType::TEXT_JS) {

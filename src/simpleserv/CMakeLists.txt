@@ -9,7 +9,7 @@ add_library(simpleserv::simpleserv ALIAS simpleserv)
 
 target_link_libraries(simpleserv PRIVATE simpleserv_options simpleserv_warnings)
 
-target_link_libraries(simpleserv PUBLIC wolfssl::wolfssl libzippp::libzippp brotlienc)
+target_link_libraries(simpleserv PUBLIC wolfssl::wolfssl libzippp::libzippp brotlienc Boost::log)
 # target_link_libraries(simpleserv PUBLIC wolfssl::wolfssl libzippp::libzippp brotlienc ${Boost_LIBRARIES})
 
 # target_include_directories(simpleserv INTERFACE ${PROJECT_SOURCE_DIR}/include)

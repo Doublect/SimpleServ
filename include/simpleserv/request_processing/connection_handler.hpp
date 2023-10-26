@@ -38,7 +38,7 @@ namespace request_processing {
 			}
 
 			if constexpr (_debug && (_debug_threadpool_worker)) {
-				std::cout << "Starting threadpool connection handler..." << std::endl;
+				std::cout << "Starting threadpool connection handler...\n";
 			}
 			while (true) {
 				auto obj = _queue->pop();
@@ -50,7 +50,7 @@ namespace request_processing {
 
 		void handle_connection(ConnectionObject co) {
 				if constexpr (_debug && (_debug_threadpool_worker)) {
-					std::cout << "Received HTTP request: " << co.request.length() << " on thread: " << std::this_thread::get_id() << std::endl;
+					std::cout << "Received HTTP request: " << co.request.length() << " on thread: " << std::this_thread::get_id() << "\n";
 				}
 				auto response = Handler::handle(co.request);
 				

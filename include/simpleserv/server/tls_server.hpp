@@ -47,18 +47,18 @@ namespace server {
 			fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 			if (sockfd == -1) {
-				std::cout << "Error creating socket" << std::endl;
+				std::cout << "Error creating socket\n";
 				exit(1);
 			}
 
 			// bind it to the port we passed in to getaddrinfo()
 			if (bind(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
-				std::cout << "Error binding socket" << std::endl;
+				std::cout << "Error binding socket\n";
 				exit(1);
 			}
 
 			if (listen(sockfd, MAXBUFLEN) == -1) {
-				std::cout << "Error listening on socket" << std::endl;
+				std::cout << "Error listening on socket\n";
 				exit(1);
 			}
 
@@ -122,7 +122,7 @@ namespace server {
 		void AcceptIncoming(std::stop_token stoken) {
 			socklen_t addr_size = sizeof(their_addr);
 
-			std::cout << "Waiting for connection..." << std::endl;
+			std::cout << "Waiting for connection...\n";
 			while (true) {
 				if(stoken.stop_requested()) {
 					return;
@@ -130,7 +130,7 @@ namespace server {
 				client_fd = accept4(sockfd, reinterpret_cast<sockaddr *>(&their_addr),
 														&addr_size, SOCK_NONBLOCK);
 				if (!(client_fd == -1 && (errno == EAGAIN))) {
-					std::cout << "Got connection. Receiving TLS" << std::endl;
+					std::cout << "Got connection. Receiving TLS\n";
 				
 					char buf[MAXBUFLEN];
 					int numbytes;

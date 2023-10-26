@@ -1,11 +1,13 @@
 #include <simpleserv/file_manager.hpp>
 
 #include <simpleserv/utility/content_coding.hpp>
+#include <simpleserv/utility/expected.hpp>
 
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <unordered_map>
 
 std::unordered_map<FileType, std::string> file_type_map = {
 		{FileType::TEXT_HTML, "text/html"},
@@ -66,16 +68,16 @@ std::string decode_file_encoding(FileEncoding file_encoding) {
 
 template <typename T, typename E, typename F> requires IsFileFetcher<T, E, F>
 utility::expected<T, E> CacheFileFetcher<T, E, F>::get_file(const std::string &full_path) {
-	//std::cout << "Requested file: " << full_path << std::endl;
-	//std::cout << "File cache size: " << file_cache.size() << std::endl;
+	//std::cout << "Requested file: " << full_path << "\n";
+	//std::cout << "File cache size: " << file_cache.size() << "\n";
 	if(file_cache.find(full_path) == file_cache.end()) {
 		auto returned = file_fetcher.get_file(full_path);
 		
 		if(returned.has_value()) {
-			//std::cout << "File not found in cache, adding it..." << std::endl;
+			//std::cout << "File not found in cache, adding it...\n";
 			file_cache[full_path] = create_file_cache_entry<T>(returned.value());
 		} else {
-			//std::cout << "File not found in cache, and could not be fetched from disk." << std::endl;
+			//std::cout << "File not found in cache, and could not be fetched from disk.\n";
 			return utility::unexpected(returned.error());
 		}
 	}
@@ -86,8 +88,8 @@ utility::expected<T, E> CacheFileFetcher<T, E, F>::get_file(const std::string &f
 
 template <>
 utility::expected<HTTPFileData, FileManagerException> DiskFileFetcher<HTTPFileData, FileManagerException>::get_file(const std::string& full_path) {
-	//std::cout << "Requested file: " << full_path << std::endl;
-	//std::cout << "File descriptors: " << file_descriptors.size() << std::endl;
+	//std::cout << "Requested file: " << full_path << "\n";
+	//std::cout << "File descriptors: " << file_descriptors.size() << "\n";
 	if(file_descriptors.find(full_path) == file_descriptors.end()) {
 		return utility::unexpected(FileManagerException("File not found: " + full_path));
 	}

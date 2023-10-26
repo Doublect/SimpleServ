@@ -6,8 +6,8 @@
 
 #include <condition_variable>
 #include <csignal>
-#include <iostream>
-#include <thread>
+#include <mutex>
+#include <string>
 #include <vector>
 
 std::condition_variable exit_signal;
@@ -25,17 +25,17 @@ int main() {
 	server_manager = ServerManager(
 			std::vector{ServerConfig{"HTTP"s, server::ServerType::HTTP, 80},
 			ServerConfig{"HTTPS"s, server::ServerType::HTTPS, 443}});
-	// std::cout << <Starting HTTP server...< << std::endl;
+	// std::cout << <Starting HTTP server...< << "\n";
 	// server::TCPServer<simpleserv::HTTPHandler> server{80};
-	// std::cout << <Starting HTTPS server...< << std::endl;
+	// std::cout << <Starting HTTPS server...< << "\n";
 	// server::TLSServer<simpleserv::HTTPHandler> server_tls{443};
 
 	// server.Start();
 	// server_tls.Start();
 
-	signal(SIGINT, signal_handler);
-	signal(SIGABRT, signal_handler);
-	signal(SIGTERM, signal_handler);
+	(void)signal(SIGINT, signal_handler);
+	(void)signal(SIGABRT, signal_handler);
+	(void)signal(SIGTERM, signal_handler);
 
 	std::unique_lock<std::mutex> lock(exit_mutex);
 

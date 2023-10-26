@@ -3,6 +3,7 @@
 
 #include <simpleserv/file_manager.hpp>
 #include <simpleserv/http/parser.hpp>
+#include <simpleserv/utility/logger.hpp>
 
 #include <csignal>
 #include <filesystem>
@@ -40,7 +41,8 @@ namespace http {
 				auto result = parse_http_request(str);
 
 				if (!result.has_value()) {
-					std::cout << "Error parsing HTTP request" << std::endl;
+					utility::Logger::warning("An error has occured during the parsing of an HTTP request");
+					utility::Logger::warning(result.error().what());
 
 					return std::nullopt;
 				}
@@ -56,11 +58,11 @@ namespace http {
 						HTTPResponse(HTTPStatusCode::OK, HTTPVersion::HTTP_1_1);
 
 				std::filesystem::path path = convert_to_filedirectory(request.path());
-				//std::cout << "Requested path: " << path << std::endl;
+				//std::cout << "Requested path: " << path << "\n";
 				auto expected_file_data = file_manager.get_file(path);
 
 				if(!expected_file_data.has_value()) {
-					std::cerr << expected_file_data.error().what() << std::endl;
+					utility::Logger::warning(expected_file_data.error().what());
 					response = HTTPResponse(HTTPStatusCode::NOT_FOUND, HTTPVersion::HTTP_1_1);
 					return response;
 				}

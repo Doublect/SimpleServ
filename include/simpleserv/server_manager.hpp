@@ -62,14 +62,14 @@ public:
 
 	void Start() {
 		for (auto& server_unit : servers) {
-			std::cout << "Starting " << server_unit.name << " server..." << std::endl;
+			std::cout << "Starting " << server_unit.name << " server...\n";
 			server_unit.server.Start();
 		}
 	}
 
 	void Open() {
 		for (auto& server_unit : servers) {
-			std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server.port_() << std::endl;
+			std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server.port_() << "\n";
 			
 			server_threads.push_back(std::jthread([&server_unit](std::stop_token stoken) { server_unit.server.Open(stoken); }));
 		}

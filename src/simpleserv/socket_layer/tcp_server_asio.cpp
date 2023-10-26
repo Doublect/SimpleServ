@@ -28,18 +28,18 @@ void TCPServer::Start() {
 		sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
 		if (sockfd == -1) {
-			std::cout << "Error creating socket" << std::endl;
+			std::cout << "Error creating socket\n";
 			exit(1);
 		}
 
 		// bind it to the port we passed in to getaddrinfo()
 		if (bind(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
-			std::cout << "Error binding socket" << std::endl;
+			std::cout << "Error binding socket\n";
 			exit(1);
 		}
 
 		if (listen(sockfd, MAXBUFLEN) == -1) {
-			std::cout << "Error listening on socket" << std::endl;
+			std::cout << "Error listening on socket\n";
 			exit(1);
 		}
 	}
