@@ -17,7 +17,7 @@ target_include_directories(simpleserv ${WARNING_GUARD} PUBLIC $<BUILD_INTERFACE:
 																															$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
 target_compile_features(simpleserv PUBLIC cxx_std_23)
-target_sources(simpleserv PUBLIC content_coding.cpp file_manager.cpp request_handler.cpp url.cpp http/parser.cpp)
+target_sources(simpleserv PUBLIC content_coding.cpp file_manager.cpp http/request_handler.cpp url.cpp http/parser.cpp)
 
 set_target_properties(
   simpleserv

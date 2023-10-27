@@ -11,7 +11,7 @@ public:
 	Brotli() = default;
 	~Brotli() = default;
 
-	static std::string encode(const std::string& path, const std::string& filename, const std::string& output_prefix =  "");
+	static std::filesystem::path encode(const std::filesystem::path &path);
 	//void decompress();
 };
 

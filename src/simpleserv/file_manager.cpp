@@ -1,9 +1,9 @@
 #include <simpleserv/file_manager.hpp>
 
-#include <simpleserv/utility/content_coding.hpp>
 #include <simpleserv/utility/expected.hpp>
 
 #include <iostream>
+#include <iterator>
 #include <filesystem>
 #include <fstream>
 #include <string>

@@ -1,6 +1,8 @@
 #include <simpleserv/utility/content_coding.hpp>
+#include <simpleserv/utility/logger.hpp>
 
 #include <brotli/encode.h>
+#include <brotli/types.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -13,28 +15,25 @@
 
 namespace utility {
 
-	std::string write_to_file(const std::string& path, const std::string& filename, const std::string& output_prefix, const std::vector<uint8_t>& output_vec) {
-		std::string output_path;
-		if(output_prefix.empty()) {
-			output_path = path + "/" + filename + ".br";
-		} else {
-			output_path = output_prefix + "/" + path + "/" + filename + ".br";
-		}
-
+	bool write_to_file(const std::filesystem::path &output_path, const std::vector<uint8_t>& output_data) {
 		// Write to file
 		std::ofstream output_file(output_path, std::ios::out | std::ios::binary);
-		std::copy(output_vec.begin(), output_vec.end(), std::ostreambuf_iterator<char>(output_file));
+		if(!output_file.good()) {
+			utility::Logger::warning("Failed to open file: " + output_path.string());
+			return false;
+		}
+		std::copy(output_data.begin(), output_data.end(), std::ostreambuf_iterator<char>(output_file));
 
-		return output_path;
+		return true;
 	};
 
 
 	// TODO: Add stream support
-	std::string Brotli::encode(const std::string& path, const std::string& filename, const std::string& output_prefix) {
+	std::filesystem::path Brotli::encode(const std::filesystem::path &path) {
 		//std::cout << "Opening file... " << path + "/" + filename << "\n";
-		std::ifstream file(path + "/" + filename, std::ios::in | std::ios::binary);
+		std::ifstream file(path, std::ios::in | std::ios::binary);
 
-		auto file_size = std::filesystem::file_size(path + "/" + filename);
+		auto file_size = std::filesystem::file_size(path);
 
 		//std::cout << "Allocating buffer...\n";
 		// Read file into buffer
@@ -45,17 +44,23 @@ namespace utility {
 		//std::cout << "Compressing file of size < << input.size() << "\n";
 		// Compress buffer
 		size_t output_size = input.size();
-		auto *output = new uint8_t[input.size()];
+		std::vector<uint8_t> output_data(input.size());
+
 		// TODO: Check return value
-		if(BROTLI_FALSE != BrotliEncoderCompress(4, BROTLI_DEFAULT_WINDOW, BROTLI_DEFAULT_MODE, input.size(), input.data(), &output_size, output)) {
+		if(BROTLI_FALSE != BrotliEncoderCompress(4, BROTLI_DEFAULT_WINDOW, BROTLI_DEFAULT_MODE, input.size(), input.data(), &output_size, output_data.data())) {
 			//std::cout << "Writing to file a size of " << output_size << "\n";
 			// Write compressed buffer to file
-			const std::vector<uint8_t> output_vec(output, output + output_size);
-			return write_to_file(path, filename, output_prefix, output_vec);
+			std::filesystem::path output_path (path);
+			output_path.concat(".br");
+			utility::Logger::info("Writing to " + output_path.string());
+			if(write_to_file(output_path, output_data)) {
+				return output_path;
+			} else {
+				return std::filesystem::path("");
+			}
 		}
 
-
-		return "";
+		return std::filesystem::path("");
 	};
 
 	// std::string GZip::encode(const std::string& path, const std::string& filename) {
@@ -82,7 +87,7 @@ namespace utility {
 
 				if(extension == ".html" || extension == ".css" || extension == ".js") {
 					const Brotli brotli;
-					brotli.encode(path, filename);
+					brotli.encode(std::filesystem::path(path) /= filename);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 #ifndef SIMPLESERV_PARSER_HPP
 #define SIMPLESERV_PARSER_HPP
 
-#include <simpleserv/message.hpp>
+#include <simpleserv/http/message.hpp>
 #include <simpleserv/utility/expected.hpp>
 #include <simpleserv/utility/string_parser.hpp>
 

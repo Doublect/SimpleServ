@@ -74,7 +74,8 @@ class FileManagerException : public std::exception {
 private:
 	std::string message;
 public:
-	FileManagerException(const std::string& message_in) : message(message_in) {}
+	explicit FileManagerException(const std::string& message_in) : message(std::move(message_in)) {}
+	explicit FileManagerException(std::string&& message_in) : message(message_in) {}
 	const char* what() const noexcept final {
 		return message.c_str();
 	}
@@ -84,8 +85,10 @@ public:
 
 class FileManagerNotFoundException : public FileManagerException {
 public:
-	FileManagerNotFoundException(const std::string& path) 
-		: FileManagerException("Could not find the following file: " + std::string(path)) {}
+	explicit FileManagerNotFoundException(const std::string& path) 
+		: FileManagerException("Could not find the following file: " + std::move(path)) {}
+	explicit FileManagerNotFoundException(std::string&& path) 
+		: FileManagerException("Could not find the following file: " + path) {}
 };
 
 template<typename T, typename E>
@@ -95,6 +98,8 @@ class FileFetcher {
 
 	public:
 		virtual utility::expected<DataT, ErrorT> get_file(const std::string& full_path) = 0;
+
+		virtual ~FileFetcher() = default;
 };
 
 template<typename T, typename E, typename F>
@@ -126,7 +131,7 @@ class DiskFileFetcher: public FileFetcher<T, E> {
 	typedef E ErrorT;
 
 
-	std::string encoded_file_prefix = ".encoded";
+	// std::string encoded_file_prefix = ".encoded";
 	std::unordered_map<std::string, FileDescriptor> file_descriptors;
 
 public: 
@@ -135,7 +140,7 @@ public:
 
 	void construct_file_descriptors(const std::string& path) {
 		const std::filesystem::path dir_path(path);
-		//std::cout << "Collecting files from directory: " << dir_path << "\n";
+		// std::cout << "Collecting files from directory: " << dir_path << "\n";
 		for (auto const& dir_entry : std::filesystem::directory_iterator{dir_path}) {
 			if(dir_entry.is_directory()) {
 				construct_file_descriptors(dir_entry.path().string());
@@ -150,22 +155,26 @@ public:
 								{FileEncoding::NONE, FileEntry{dir_entry.path().string()}}
 						}
 				};
-				//std::cout << "file_descriptors: " << dir_entry.path().string() << "\n";
+				// std::cout << "file_descriptors: " << dir_entry.path().string() << "\n";
 			}
 		}
 	}
 
 	void generate_encoded_files() {
 		for(const auto& [path, file_descriptor] : file_descriptors) {
-			//std::cout << "Encoding file: " << path << "\n";
+			std::cout << "Encoding file: " << path << "\n";
 			if(file_descriptor.filetype == FileType::TEXT_HTML ||
 					file_descriptor.filetype == FileType::TEXT_CSS ||
 					file_descriptor.filetype == FileType::TEXT_JS) {
 				utility::Brotli brotli;
 				std::filesystem::path dir_path(path);
-				std::string file_path = brotli.encode(dir_path.parent_path(), file_descriptor.filename, encoded_file_prefix);
-
-				file_descriptors[path].file_paths[FileEncoding::BROTLI] = FileEntry{file_path + ".br"};
+				std::filesystem::path file_path(dir_path.parent_path() /= file_descriptor.filename);
+				std::filesystem::path output_path = brotli.encode(file_path);
+				
+				if(output_path != "") {
+					std::cout << "Encoded to: " << path << "\n";
+					file_descriptors[path].file_paths[FileEncoding::BROTLI] = FileEntry{output_path};
+				}
 			}
 		}
 	}

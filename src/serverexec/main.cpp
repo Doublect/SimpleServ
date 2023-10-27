@@ -1,4 +1,5 @@
 #include <simpleserv/http/http_handler.hpp>
+#include <simpleserv/server/server.hpp>
 #include <simpleserv/server/tcp_server.hpp>
 #include <simpleserv/server/tls_server.hpp>
 #include <simpleserv/server_manager.hpp>

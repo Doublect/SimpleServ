@@ -2,7 +2,7 @@
 #define WEBSERVER_CONNECTION_HPP
 
 #include <simpleserv/utility/lock_free_queue.hpp>
-#include <simpleserv/message.hpp>
+#include <simpleserv/http/message.hpp>
 
 namespace request_processing {
 	template <class T, typename ConnectionObject>

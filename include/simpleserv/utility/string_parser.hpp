@@ -5,6 +5,7 @@
 
 #include <format>
 #include <functional>
+#include <optional>
 #include <source_location>
 #include <string>
 #include <string_view>
@@ -12,55 +13,58 @@
 
 namespace utility {
 
-		class parser_error final : public std::exception {
+	class parser_error final : public std::exception {
 	public:
-		parser_error(const std::source_location location = std::source_location::current()) : location(location) {}
-		parser_error(std::string message, const std::source_location location = std::source_location::current()) : location(location) {}
+		explicit parser_error(const std::source_location location = std::source_location::current()) : location_(location) {}
+		explicit parser_error(std::string message, const std::source_location location = std::source_location::current()) : location_(location) {
+			msg_ = std::format("Parser error in {}, line {}, function {}\n {}", location_.file_name(), location_.line(), location_.function_name(), message);
+		}
 		~parser_error() final {}
 
 		const char *what() const noexcept override {
-			if(message.empty()) {
-				return "An error has occured during parsing.";
-			}
-
-			return std::format("Parser error in {}, line {}, function {}\n {}", location.file_name(), location.line(), location.function_name(), message).c_str();
+			return msg_.c_str();
 		}
 
 	private:
-		std::source_location location;
-		std::string message;
+		std::source_location location_;
+		std::string msg_ = "An error has occured during parsing.";
 
 	};
 
 	class StringParser {
 	public:
-		StringParser(std::string str) : str(str) {}
+		explicit StringParser(const std::string& str_in) : str(std::move(str_in)) {}
+		explicit StringParser(std::string&& str_in) : str(str_in) {}
 
 		inline void move(size_t steps) {
 			view.remove_prefix(steps);
 		}
 
-		inline utility::expected<void, parser_error> expect(char char1) {
+		inline std::optional<parser_error> expect(char char1) {
 			if(!view.starts_with(char1)) {
-				return utility::unexpected(parser_error(std::format("Expected character: {} ({}), got {} ({})", (char1), static_cast<int>(char1), str, static_cast<int>(view[0]))));
+				return parser_error(std::format("Expected character: {} ({}), got {} ({})", (char1), static_cast<int>(char1), view[0], static_cast<int>(view[0])));
 			}
+
 			view.remove_prefix(1);
+			return std::nullopt;
 		}
 
-		inline utility::expected<void, parser_error> expect(const std::string_view chars) {
+		inline std::optional<parser_error> expect(const std::string_view& chars, const std::source_location location = std::source_location::current()) {
 			if(!view.starts_with(chars)) {
 				// TODO: string escaping
-				return utility::unexpected(parser_error(std::format("Expected characters: {}, got {}", chars, str)));
+				return parser_error(std::format("Expected characters: {}, got {}", chars, view), location);
 			}
 
 			view.remove_prefix(chars.length());
+			return std::nullopt;
 		}
 
-		inline utility::expected<void, parser_error> expect_two(char char1, char char2) {
+		inline std::optional<parser_error> expect_two(char char1, char char2) {
 			if(!view.starts_with(char1) && !view.starts_with(char2)) {
-				return utility::unexpected(parser_error(std::format("Expected character: {} ({}) or {} ({}), got {} ({})", (char1), static_cast<int>(char1), char2, static_cast<int>(char2), str, static_cast<int>(view[0]))));
+				return parser_error(std::format("Expected character: {} ({}) or {} ({}), got {} ({})", (char1), static_cast<int>(char1), char2, static_cast<int>(char2), str, static_cast<int>(view[0])));
 			}
 			view.remove_prefix(1);
+			return std::nullopt;
 		}
 
 		inline void consume_all(char char1) {
@@ -86,12 +90,12 @@ namespace utility {
 
 		template<typename T>
 		inline T process_function(std::function<T(std::string_view&)> function) {
-			function(view);
+			return function(view);
 		}
 
 		template<typename T>
 		inline T process_function_own(std::function<T(std::string_view)> function) {
-			function(std::move(view));
+			return function(std::move(view));
 		}
 
 		constexpr std::string_view next_token(const char delim = ' ') {
@@ -113,8 +117,6 @@ namespace utility {
 	private:
 		const std::string str;
 		std::string_view view {str};
-		const size_t length = str.length();
-		std::string::const_iterator pointer = str.begin();
 	};
 }
 
