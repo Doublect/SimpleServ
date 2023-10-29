@@ -2,7 +2,7 @@
 #include <simpleserv/server/server.hpp>
 #include <simpleserv/server/tcp_server.hpp>
 #include <simpleserv/server/tls_server.hpp>
-#include <simpleserv/server_manager.hpp>
+#include <simpleserv/server/server_manager.hpp>
 #include <simpleserv/file_manager.hpp>
 
 #include <condition_variable>
@@ -15,6 +15,7 @@ std::condition_variable exit_signal;
 std::mutex exit_mutex;
 
 using namespace std::literals::string_literals;
+using namespace server;
 ServerManager server_manager;
 
 [[noreturn]] void signal_handler(int signum);
@@ -26,9 +27,9 @@ int main() {
 	server_manager = ServerManager(
 			std::vector{ServerConfig{"HTTP"s, server::ServerType::HTTP, 80},
 			ServerConfig{"HTTPS"s, server::ServerType::HTTPS, 443}});
-	// std::cout << <Starting HTTP server...< << "\n";
+	// std::cout << "Starting HTTP server..." << "\n";
 	// server::TCPServer<simpleserv::HTTPHandler> server{80};
-	// std::cout << <Starting HTTPS server...< << "\n";
+	// std::cout << "Starting HTTPS server..." << "\n";
 	// server::TLSServer<simpleserv::HTTPHandler> server_tls{443};
 
 	// server.Start();
