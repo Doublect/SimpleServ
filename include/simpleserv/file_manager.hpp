@@ -34,6 +34,8 @@ struct FileEntry {
 	std::string path;
 };
 
+/// The FileDescriptor describes a file and maintains the paths to all different representations
+/// of it present.
 struct FileDescriptor {
 	std::string filename;
 	FileType filetype;
@@ -46,11 +48,10 @@ struct HTTPFileData {
 	std::string content;
 };
 
+template<typename T>
 struct CacheFileFetcherEntry {
 	std::string filename;
-	FileType http_content_type;
-	FileEncoding http_content_encoding;
-	std::string content;
+	T value;
 };
 
 //TODO: Support for compressed files extensions
@@ -58,16 +59,14 @@ FileType encode_filetype(const std::string& filename);
 std::string decode_filetype(FileType filetype);
 std::string decode_file_encoding(FileEncoding file_encoding);
 
-template <typename T> requires std::is_same_v<T, HTTPFileData>
-inline CacheFileFetcherEntry create_file_cache_entry(T value) {
-	const HTTPFileData& file_data = value;
-	
-	return CacheFileFetcherEntry{decode_filetype(file_data.filetype), file_data.filetype, file_data.file_encoding, file_data.content};
+template <typename T>
+inline CacheFileFetcherEntry<T> create_file_cache_entry(std::string filename, T data) {	
+	return CacheFileFetcherEntry<T>{filename, data};
 };
 
-template <typename T> requires std::is_same_v<T, HTTPFileData>
-inline T from_file_cache_entry(CacheFileFetcherEntry value) {
-	return HTTPFileData{value.http_content_type, value.http_content_encoding, value.content};
+template <typename T>
+inline T from_file_cache_entry(CacheFileFetcherEntry<T> cache_entry) {
+	return cache_entry.value;
 };
 
 class FileManagerException : public std::exception {
@@ -80,8 +79,6 @@ public:
 		return message.c_str();
 	}
 };
-
-//FileManagerException::FileManagerException(const std::string& message_in) : message(message_in) {};
 
 class FileManagerNotFoundException : public FileManagerException {
 public:
@@ -114,7 +111,7 @@ class CacheFileFetcher: public FileFetcher<T, E> {
 
 private:
 	FileFetcher file_fetcher{};
-	std::unordered_map<std::string, CacheFileFetcherEntry> file_cache;
+	std::unordered_map<std::string, CacheFileFetcherEntry<DataT>> file_cache;
 	std::mutex file_access_mutex;
 	uint32_t max_cache_size_bytes = 10000000;
 

@@ -1,10 +1,13 @@
 #include <simpleserv/file_manager.hpp>
 
 #include <simpleserv/utility/expected.hpp>
+#include <simpleserv/utility/logger.hpp>
+#include <simpleserv/debug_flags.hpp>
 
 #include <iostream>
 #include <iterator>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <string>
 #include <unordered_map>
@@ -68,16 +71,23 @@ std::string decode_file_encoding(FileEncoding file_encoding) {
 
 template <typename T, typename E, typename F> requires IsFileFetcher<T, E, F>
 utility::expected<T, E> CacheFileFetcher<T, E, F>::get_file(const std::string &full_path) {
-	//std::cout << "Requested file: " << full_path << "\n";
-	//std::cout << "File cache size: " << file_cache.size() << "\n";
+	if constexpr (debug::all(_debug_file_manager)) {
+		utility::Logger::info("Requested file: " + full_path + "\n");
+		utility::Logger::info(std::format("File cache size: {}\n", file_cache.size()));
+	}
+
 	if(file_cache.find(full_path) == file_cache.end()) {
 		auto returned = file_fetcher.get_file(full_path);
 		
 		if(returned.has_value()) {
-			//std::cout << "File not found in cache, adding it...\n";
-			file_cache[full_path] = create_file_cache_entry<T>(returned.value());
+			if constexpr (debug::all(_debug_file_manager_cache_miss)) {
+				utility::Logger::info("File not found in cache, adding it...\n");
+			}
+			file_cache[full_path] = create_file_cache_entry<T>(full_path, returned.value());
 		} else {
-			//std::cout << "File not found in cache, and could not be fetched from disk.\n";
+			if constexpr (debug::all(_debug_file_manager_cache_miss)) {
+				utility::Logger::info("File not found in cache, and could not be fetched from disk.\n");
+			}
 			return utility::unexpected(returned.error());
 		}
 	}
@@ -88,8 +98,11 @@ utility::expected<T, E> CacheFileFetcher<T, E, F>::get_file(const std::string &f
 
 template <>
 utility::expected<HTTPFileData, FileManagerException> DiskFileFetcher<HTTPFileData, FileManagerException>::get_file(const std::string& full_path) {
-	//std::cout << "Requested file: " << full_path << "\n";
-	//std::cout << "File descriptors: " << file_descriptors.size() << "\n";
+	if constexpr (debug::all(_debug_file_manager)) {
+		utility::Logger::info("Requested file: " + full_path + "\n");
+		utility::Logger::info(std::format("File descriptors: {}\n", file_descriptors.size()));
+	}
+
 	if(file_descriptors.find(full_path) == file_descriptors.end()) {
 		return utility::unexpected(FileManagerException("File not found: " + full_path));
 	}
