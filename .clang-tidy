@@ -1,4 +1,3 @@
----
 Checks: "*,
         -abseil-*,
         -altera-*,
@@ -11,11 +10,11 @@ Checks: "*,
         -readability-else-after-return,
         -readability-static-accessed-through-instance,
         -readability-avoid-const-params-in-decls,
-        - - guidelines-non-private-member-variables-in-classes,
+        -cppcoreguidelines-non-private-member-variables-in-classes,
         -misc-non-private-member-variables-in-classes,
 "
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: '\.hpp$'
 FormatStyle:     none
 
 CheckOptions:

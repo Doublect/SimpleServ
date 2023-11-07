@@ -40,6 +40,7 @@ macro(simpleserv_setup_options)
     option(simpleserv_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
     option(simpleserv_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
     option(simpleserv_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
+		option(simpleserv_ENABLE_INCLUDE_WHAT_YOU_USE "Enable include-what-you-use" OFF)
     option(simpleserv_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
     option(simpleserv_ENABLE_PCH "Enable precompiled headers" OFF)
     option(simpleserv_ENABLE_CACHE "Enable ccache" OFF)
@@ -54,6 +55,7 @@ macro(simpleserv_setup_options)
     option(simpleserv_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
     option(simpleserv_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
     option(simpleserv_ENABLE_CLANG_TIDY "Enable clang-tidy" ON)
+		option(simpleserv_ENABLE_INCLUDE_WHAT_YOU_USE "Enable include-what-you-use" ON)
     option(simpleserv_ENABLE_CPPCHECK "Enable cpp-check analysis" ON)
     option(simpleserv_ENABLE_PCH "Enable precompiled headers" OFF)
     option(simpleserv_ENABLE_CACHE "Enable ccache" ON)
@@ -71,6 +73,7 @@ macro(simpleserv_setup_options)
       simpleserv_ENABLE_SANITIZER_MEMORY
       simpleserv_ENABLE_UNITY_BUILD
       simpleserv_ENABLE_CLANG_TIDY
+			simpleserv_ENABLE_INCLUDE_WHAT_YOU_USE
       simpleserv_ENABLE_CPPCHECK
       simpleserv_ENABLE_COVERAGE
       simpleserv_ENABLE_PCH
@@ -163,6 +166,10 @@ macro(simpleserv_local_options)
   if(simpleserv_ENABLE_CLANG_TIDY)
     simpleserv_enable_clang_tidy(simpleserv_options ${simpleserv_WARNINGS_AS_ERRORS})
   endif()
+
+	if(simpleserv_ENABLE_INCLUDE_WHAT_YOU_USE)
+		simpleserv_enable_include_what_you_use(simpleserv_options ${simpleserv_WARNINGS_AS_ERRORS})
+	endif()
 
   if(simpleserv_ENABLE_CPPCHECK)
     simpleserv_enable_cppcheck(${simpleserv_WARNINGS_AS_ERRORS} "" # override cppcheck options

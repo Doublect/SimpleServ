@@ -14,31 +14,6 @@ function(simpleserv_setup_dependencies)
 			NAME wolfssl
 			GITHUB_REPOSITORY wolfSSL/wolfssl
 			GIT_TAG v5.6.3-stable)
-		
-		if(wolfssl_ADDED)
-			add_library(WolfSSL::WolfSSL INTERFACE IMPORTED)
-			set_target_properties(WolfSSL::WolfSSL PROPERTIES
-					INTERFACE_INCLUDE_DIRECTORIES "${WOLFSSL_INCLUDE_DIR}"
-					INTERFACE_LINK_LIBRARIES "${WOLFSSL_LIBRARY}"
-			)
-		else()
-			message(STATUS "WolfSSL library not found.")
-		endif()
-		# find_path(WOLFSSL_INCLUDE_DIR NAMES wolfssl/ssl.h PATHS /usr/include)
-		# find_library(WOLFSSL_LIBRARY NAMES libwolfssl.so PATHS /usr/lib)
-		# if (WOLFSSL_INCLUDE_DIR)
-		# 	set(WOLFSSL_FOUND TRUE)
-		# endif()
-
-		# if (WOLFSSL_FOUND AND WOLFSSL_LIBRARY)
-		# 	add_library(wolfssl::wolfssl INTERFACE IMPORTED)
-		# 	set_target_properties(wolfssl::wolfssl PROPERTIES
-		# 			INTERFACE_INCLUDE_DIRECTORIES "${WOLFSSL_INCLUDE_DIR}"
-		# 			INTERFACE_LINK_LIBRARIES "${WOLFSSL_LIBRARY}"
-		# 	)
-		# else()
-		# 	message(STATUS "WolfSSL library not found.")
-		# endif()
 	endif()
 
 	# if(NOT TARGET GTest::GTest)
