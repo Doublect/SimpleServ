@@ -1,7 +1,5 @@
 # SimpleServ - Simple HTTPS server
 
-# ===================
-
 # Building SimpleServ
 
 ## Prerequisites
@@ -40,7 +38,7 @@ ninja -f build-Debug.ninja
 ninja -f build-Release.ninja
 ```
 
-The compiled executable will be in the `build/Debug` or `build/Release` directory. The default configuration uses the priviledged ports 80 and 443. To use these ports, the executable must be run as root, unless the binary is granted the `CAP_NET_BIND_SERVICE` capability (through `setcap`).
+The compiled executable will be in the `build/Debug` or `build/Release` directory. The default configuration uses the privilidged ports 80 and 443. To use these ports, the executable must be run as root, unless the binary is granted the `CAP_NET_BIND_SERVICE` capability (through `setcap`).
 
 Currently, the server will server files from the relative directory `../webdir`. The program will exit if this directory does not exist.
 ```bash
@@ -49,6 +47,16 @@ sudo ./build/Debug/serverexec
 # or
 sudo ./build/Release/serverexec
 ```
+
+## Testing
+
+The project uses [Catch2](https://github.com/catchorg/Catch2) for unit testing. With the CMake `BUILD_TESTING` option enabled, the tests will be built alongside the project. To manually build and run the tests, run the following command:
+```bash
+ninja -f build-Debug.ninja test
+
+./build/Debug/tests
+```
+
 
 # Credits
 - [Boost](https://www.boost.org/)
