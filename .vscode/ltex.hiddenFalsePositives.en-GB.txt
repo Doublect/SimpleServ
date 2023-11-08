@@ -1,0 +1,2 @@
+{"rule":"MORFOLOGIK_RULE_EN_GB","sentence":"^\\QSimpleServ - Simple HTTPS server\n===================\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_GB","sentence":"^\\QCredits\nBoost\nJason Turner's C++ Best Practices Template(https://github.com/cpp-best-practices/cmake_template\nWolfSSL (Repository)\\E$"}

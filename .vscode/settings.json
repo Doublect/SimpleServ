@@ -112,7 +112,8 @@
 			"ios": "cpp",
 			"locale": "cpp",
 			"filesystem": "cpp",
-			"cassert": "cpp"
+			"cassert": "cpp",
+			"hash_map": "cpp"
 		},
     "C_Cpp.default.compileCommands": "builddir/vscode_compile_commands.json",
     "C_Cpp.default.cppStandard": "gnu++23",

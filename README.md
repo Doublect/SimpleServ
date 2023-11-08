@@ -1,14 +1,59 @@
-# 	Simple HTTPS server
-# 	===================
-#	
-# 	Specification Support
-- [ ] [HTTP/1.1](https://tools.ietf.org/html/rfc2616)
-- - [ ] [TLS Upgrade](https://tools.ietf.org/html/rfc2817)	
-- - [ ] [Well-Known URIs](https://tools.ietf.org/html/rfc5785)
-- - [ ] [Content-Disposition](https://tools.ietf.org/html/rfc6266)
-- - [ ] [Additional HTTP Status Codes](https://tools.ietf.org/html/rfc6585)
-- [ ] [HTTP/1.1: Message Syntax and Routing](https://tools.ietf.org/html/rfc7230)	
-- [ ] [HTTP/2](https://tools.ietf.org/html/rfc7540)			
+# SimpleServ - Simple HTTPS server
 
+# ===================
 
-# HTTP/1.1 (RFC 2616) Checklist
+# Building SimpleServ
+
+## Prerequisites
+- An up-to-date C++ compiler (with C++23 support): 
+    - GCC >12.0
+    - Clang >16.0
+- CMake >3.25
+
+### Optional dependencies
+SimpleServ uses [CPM](https://github.com/cpm-cmake/CPM.cmake) to manage dependencies. CPM will automatically download and build the dependencies when building SimpleServ. However, if you wish to use your own version of the following dependencies, you can install them manually.
+
+- Boost 1.83.0
+
+## Configuration
+First, clone the SimpleServ repository:
+```bash
+git clone https://github.com/Doublect/SimpleServ.git
+```
+
+To configure the project, run the following commands:
+```bash
+mkdir build
+cd build
+cmake -G "Ninja Multi-Config" ../
+```
+
+To change variables, you can use the CMake GUI or edit the CMake cache.
+
+## Building and Running
+
+To build the project, run one of the following commands:
+```bash
+# Build for Debug
+ninja -f build-Debug.ninja 
+# Build for Release
+ninja -f build-Release.ninja
+```
+
+The compiled executable will be in the `build/Debug` or `build/Release` directory. The default configuration uses the priviledged ports 80 and 443. To use these ports, the executable must be run as root, unless the binary is granted the `CAP_NET_BIND_SERVICE` capability (through `setcap`).
+
+Currently, the server will server files from the relative directory `../webdir`. The program will exit if this directory does not exist.
+```bash
+# Run
+sudo ./build/Debug/serverexec
+# or
+sudo ./build/Release/serverexec
+```
+
+# Credits
+- [Boost](https://www.boost.org/)
+- [Catch2](https://github.com/catchorg/Catch2)
+- [CMake](https://cmake.org/)
+- [CPM](https://github.com/cpm-cmake/CPM.cmake)
+- [C++ Best Practices Template](https://github.com/cpp-best-practices/cmake_template) by Jason Turner and Contributors
+- [WolfSSL](https://www.wolfssl.com/) ([Repository](https://github.com/wolfSSL/wolfssl]))
