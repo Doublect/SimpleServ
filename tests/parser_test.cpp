@@ -1,23 +1,11 @@
-//#include<gtest/gtest.h>
 #include <catch2/catch_test_macros.hpp>
 
-#include<simpleserv/http/parser.hpp>
+#include <simpleserv/http/parser.hpp>
 
-#include<string>
+#include <string>
 
 using namespace std::literals::string_literals;
 using namespace http;
-
-
-
-// template<typename T, typename E>
-// inline T success(utility::expected<T, E> result) {
-//     EXPECT_TRUE(result.has_value());
-//     return result.value();
-// }
-
-// #define EXPECT_SUCCESS(result) EXPECT_TRUE(result.has_value())
-// #define EXPECT_FAILURE(result) EXPECT_FALSE(result.has_value())
 
 const std::string test_request_line = "GET / HTTP/1.1\r\n";
 
@@ -35,75 +23,75 @@ TEST_CASE("ParseMessageHeader", "[ParserTest]") {
     REQUIRE(headers["Content-Type"] == "text/html");
 }
 
-// TEST(ParserTest, ParseMessageHeaders) {
-//     std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n"s;
+TEST_CASE("ParseMessageHeaders", "[ParserTest]") {
+    std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n"s;
 
-//     auto result = parse_http_request(input);
-//     EXPECT_SUCCESS(result);
-//     if(!result.has_value()) {
-//         return;
-//     }
+    auto result = parse_http_request(input);
+    REQUIRE(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-//     auto headers = result.value().headers();
+    auto headers = result.value().headers();
 
-//     EXPECT_EQ(headers["Content-Type"], "text/html");
-//     EXPECT_EQ(headers["Content-Length"], "100");
-// }
+    REQUIRE(headers["Content-Type"] == "text/html");
+    REQUIRE(headers["Content-Length"] == "100");
+}
 
-// TEST(ParserTest, ParseMessageHeadersWithBody) {
-//     std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>";
+TEST_CASE("ParseMessageHeadersWithBody", "[ParserTest]") {
+    std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>";
 
-//     auto result = parse_http_request(input);
-//     EXPECT_SUCCESS(result);
-//     if(!result.has_value()) {
-//         return;
-//     }
+    auto result = parse_http_request(input);
+    REQUIRE(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-//     auto headers = result.value().headers();
+    auto headers = result.value().headers();
 
-//     EXPECT_EQ(headers["Content-Type"], "text/html");
-//     EXPECT_EQ(headers["Content-Length"], "100");
-// 		EXPECT_EQ(result.value().body(), "<html><body>Hello, world!</body></html>");
-// }
+    REQUIRE(headers["Content-Type"] == "text/html");
+    REQUIRE(headers["Content-Length"] == "100");
+		REQUIRE(result.value().body() == "<html><body>Hello, world!</body></html>");
+}
 
-// TEST(ParserTest, ParseMessageHeadersWithBodyAndExtra) {
-//     std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>\r\n\r\n"s;
+TEST_CASE("ParseMessageHeadersWithBodyAndExtra", "[ParserTest]") {
+    std::string input = test_request_line + "Content-Type: text/html\r\nContent-Length: 100\r\n\r\n<html><body>Hello, world!</body></html>\r\n\r\n"s;
 
-//     auto result = parse_http_request(input);
-//     EXPECT_SUCCESS(result);
-//     if(!result.has_value()) {
-//         return;
-//     }
+    auto result = parse_http_request(input);
+    REQUIRE(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-//     auto headers = result.value().headers();
+    auto headers = result.value().headers();
 
-//     EXPECT_EQ(headers["Content-Type"], "text/html");
-//     EXPECT_EQ(headers["Content-Length"], "100");
-// }
+    REQUIRE(headers["Content-Type"] == "text/html");
+    REQUIRE(headers["Content-Length"] == "100");
+}
 
-// TEST(ParserTest, MalformedMessageHeaders) {
-//     std::string input = test_request_line + "Content\r\n-Type: text/html\r\n"s;
+TEST_CASE("MalformedMessageHeaders", "[ParserTest]") {
+    std::string input = test_request_line + "Content\r\n-Type: text/html\r\n"s;
 
-//     auto result = parse_http_request(input);
-//     EXPECT_FAILURE(result);
-// }
+    auto result = parse_http_request(input);
+    REQUIRE_FALSE(result);
+}
 
-// TEST(ParserTest, NoHeaders) {
-//     std::string input = test_request_line + "\r\n"s;
+TEST_CASE("NoHeaders", "[ParserTest]") {
+    std::string input = test_request_line + "\r\n"s;
 
-//     auto result = parse_http_request(input);
-//     EXPECT_SUCCESS(result);
-//     if(!result.has_value()) {
-//         return;
-//     }
+    auto result = parse_http_request(input);
+    REQUIRE(result);
+    if(!result.has_value()) {
+        return;
+    }
 
-//     auto headers = result.value().headers();
-//     EXPECT_EQ(headers.size(), 0);
-// }
+    auto headers = result.value().headers();
+    REQUIRE(headers.size() == 0);
+}
 
-// TEST(ParserTest, EmptyInput) {
-//     std::string input = test_request_line + ""s;
+TEST_CASE("EmptyInput", "[ParserTest]") {
+    std::string input = test_request_line + ""s;
 
-//     auto result = parse_http_request(input);
-//     EXPECT_FAILURE(result);
-// }
+    auto result = parse_http_request(input);
+    REQUIRE_FALSE(result);
+}

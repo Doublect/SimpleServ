@@ -24,7 +24,7 @@ namespace utility {
 				return query;
 			}
 
-			std::string GetQuery(std::string &key) {
+			std::string GetQuery(const std::string &key) {
 				return query[key];
 			}
 	};

@@ -4,6 +4,7 @@
 #include <simpleserv/utility/logger.hpp>
 #include <simpleserv/debug_flags.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iostream>
@@ -11,7 +12,6 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>
