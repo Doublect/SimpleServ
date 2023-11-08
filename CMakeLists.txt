@@ -51,12 +51,13 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-if(myproject_BUILD_FUZZ_TESTS)
-  message(AUTHOR_WARNING "Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html")
-  if (NOT myproject_ENABLE_ADDRESS_SANITIZER AND NOT myproject_ENABLE_THREAD_SANITIZER)
-    message(WARNING "You need asan or tsan enabled for meaningful fuzz testing")
-  endif()
-  add_subdirectory(fuzz_test)
+if(simpleserv_BUILD_FUZZ_TESTS)
+	message(WARNING "There are no fuzz tests yet!")
+	# message(AUTHOR_WARNING "Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html")
+  # if (NOT simpleserv_ENABLE_ADDRESS_SANITIZER AND NOT simpleserv_ENABLE_THREAD_SANITIZER)
+  #   message(WARNING "You need asan or tsan enabled for meaningful fuzz testing")
+  # endif()
+  # add_subdirectory(fuzz_test)
 endif()
 
 # If MSVC is being used, and ASAN is enabled, we need to set the debugger environment
@@ -78,7 +79,7 @@ include(cmake/PackageProject.cmake)
 
 # Add other targets that you want installed here, by default we just package the one executable
 # we know we want to ship
-myproject_package_project(
+simpleserv_package_project(
   TARGETS
   serverexec
   simpleserv_options
