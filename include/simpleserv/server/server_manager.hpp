@@ -4,9 +4,9 @@
 #include <simpleserv/server/tcp_server.hpp>
 #include <simpleserv/server/tls_server.hpp>
 #include <simpleserv/server/server.hpp>
-#include <simpleserv/file_manager.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <thread>
 #include <vector>
@@ -21,27 +21,25 @@ namespace server {
 
 	struct ServerUnit {
 		std::string name;
-		server::Server &server;
+		std::unique_ptr<Server> server;
 	};
 
 	class ServerManager {
-		std::vector<server::Server *> servers_raw;
 		std::vector<std::jthread> server_threads;
 		std::vector<ServerUnit> servers;
 
 	public:
 		ServerManager() = default;
 
-		ServerManager(ServerManager&&) = default;
-		ServerManager& operator=(ServerManager&&) = default;
 		ServerManager(ServerManager&) = delete;
 		ServerManager& operator=(ServerManager&) = delete;
+		ServerManager(ServerManager&&) = default;
+		ServerManager& operator=(ServerManager&&) = default;
 
-		ServerManager(std::vector<ServerConfig> configs) {
-			for (auto& server : configs) {
-				server::Server *server_ptr = configure_server(server);
-				servers_raw.push_back(server_ptr);
-				this->servers.push_back(ServerUnit {server.name, *server_ptr});
+		explicit ServerManager(const std::vector<ServerConfig>& configs) {
+			for (const auto& server : configs) {
+				std::unique_ptr<Server> server_ptr = configure_server(server);
+				this->servers.push_back(ServerUnit {server.name, std::move(server_ptr)});
 			}
 
 			Start();
@@ -58,32 +56,32 @@ namespace server {
 			}
 
 			for (auto& server_unit : servers) {
-				server_unit.server.Stop();
+				server_unit.server->Stop();
 			}
 		}
 
 		void Start() {
 			for (auto& server_unit : servers) {
 				std::cout << "Starting " << server_unit.name << " server...\n";
-				server_unit.server.Start();
+				server_unit.server->Start();
 			}
 		}
 
 		void Open() {
 			for (auto& server_unit : servers) {
-				std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server.port_() << "\n";
+				std::cout << "Opening " << server_unit.name << " server on port " << server_unit.server->port_() << "\n";
 				
-				server_threads.push_back(std::jthread([&server_unit](std::stop_token stoken) { server_unit.server.Open(stoken); }));
+				server_threads.emplace_back([&server_unit](const std::stop_token &stoken) { server_unit.server->Open(stoken); });
 			}
 		}
 
 	private: 
-		constexpr server::Server *configure_server(const ServerConfig& config) {
+		constexpr static std::unique_ptr<Server> configure_server(const ServerConfig& config) {
 			switch (config.serverType) {
 				case server::ServerType::HTTP:
-					return new server::TCPServer<http::HTTPHandler>(config.port);
+					return std::make_unique<server::TCPServer<http::HTTPHandler>>(config.port);
 				case server::ServerType::HTTPS:
-					return new server::TLSServer<http::HTTPHandler>(config.port);
+					return std::make_unique<server::TLSServer<http::HTTPHandler>>(config.port);
 				default:
 					break;
 			}

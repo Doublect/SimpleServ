@@ -1,8 +1,8 @@
 #ifndef WEBSERVER_HTTP_HANDLER_HPP
 #define WEBSERVER_HTTP_HANDLER_HPP
 
-#include <simpleserv/file_manager.hpp>
 #include <simpleserv/http/parser.hpp>
+#include <simpleserv/utility/file_manager.hpp>
 #include <simpleserv/utility/logger.hpp>
 
 #include <csignal>
@@ -14,72 +14,20 @@
 
 namespace http {
 
-	const std::vector<Header> capabilities {
+	const std::vector<Header> capabilities { // NOLINT(cert-err58-cpp)
 		Header {	"Age", "0" },
 		Header { "Allow", "GET, HEAD, OPTIONS"},
 		Header { "Server", "SSRV/0.1" },
 	};
 
-	static FileManager file_manager = FileManager();
-
-	constexpr std::string remove_query(std::string str) {
-		size_t query_index = str.find("?");
-		if (query_index != std::string::npos) {
-			return str.substr(0, query_index);
-		}
-
-		return str;
-	}
-
-	const std::filesystem::path convert_to_filedirectory(const std::string& request_path) {
-		return std::filesystem::path("../webdir" + remove_query(request_path));
-	}
+	static utility::FileManager file_manager{};
 
 	class HTTPHandler {
 		public:
-			static std::optional<std::string> handle(std::string str) {
-				auto result = parse_http_request(str);
-
-				if (!result.has_value()) {
-					utility::Logger::warning("An error has occured during the parsing of an HTTP request");
-					utility::Logger::warning(result.error().what());
-
-					return std::nullopt;
-				}
-
-				auto request = result.value();
-
-				return prepare_response(request).to_string();
-			}
+			static std::optional<std::string> handle(const std::string& str);
 
 		private:
-			inline static HTTPResponse prepare_response(HTTPRequest request) {
-				HTTPResponse response =
-						HTTPResponse(HTTPStatusCode::OK, HTTPVersion::HTTP_1_1);
-
-				std::filesystem::path path = convert_to_filedirectory(request.path());
-				//std::cout << "Requested path: " << path << "\n";
-				auto expected_file_data = file_manager.get_file(path);
-
-				if(!expected_file_data.has_value()) {
-					utility::Logger::warning(expected_file_data.error().what());
-					response = HTTPResponse(HTTPStatusCode::NOT_FOUND, HTTPVersion::HTTP_1_1);
-					return response;
-				}
-
-				auto file_data = expected_file_data.value();
-
-				response.SetHeader("Content-Type", decode_filetype(file_data.filetype));
-				if(file_data.file_encoding != FileEncoding::NONE) {
-					response.SetHeader("Content-Encoding", decode_file_encoding(file_data.file_encoding));
-				}
-
-				if(request.method() != HTTPMethod::HEAD) {
-					response.SetContent(file_data.content);
-				}
-
-				return response;
-			}
+			inline static HTTPResponse prepare_response(const HTTPRequest& request);
 	};
 
 	template<HTTPMethod request_method>

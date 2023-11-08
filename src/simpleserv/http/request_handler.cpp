@@ -28,9 +28,18 @@ namespace http {
 
 	class IGETRequestHandler {
 	public:
-		~IGETRequestHandler() = default;
+		IGETRequestHandler() = default;
+
+		IGETRequestHandler(const IGETRequestHandler &) = delete;
+		IGETRequestHandler &operator=(const IGETRequestHandler &) = delete;
+		IGETRequestHandler(IGETRequestHandler &&) = delete;
+		IGETRequestHandler &operator=(IGETRequestHandler &&) = delete;
+
+		virtual ~IGETRequestHandler() = default;
 
 		virtual GETResult get(std::string path, GETConditionals conditionals) = 0;
+
+	protected:
 	};
 
 	template <typename K, typename V>
@@ -78,8 +87,17 @@ namespace http {
 
 	class IHEADRequestHandler {
 	public:
-		~IHEADRequestHandler() = default;
+		IHEADRequestHandler() = default;
+
+		IHEADRequestHandler(const IHEADRequestHandler &) = delete;
+		IHEADRequestHandler &operator=(const IHEADRequestHandler &) = delete;
+		IHEADRequestHandler(IHEADRequestHandler &&) = delete;
+		IHEADRequestHandler &operator=(IHEADRequestHandler &&) = delete;
+
+		virtual ~IHEADRequestHandler() = default;
+
 		virtual std::map<std::string, std::string> head(std::string path) = 0;
+	protected:
 	};
 
 	template <HEADRequestHandler T>
@@ -98,16 +116,20 @@ namespace http {
 		return response;
 	}
 
-	struct POSTResult {
-		POSTResultState state;
-		std::string body;
-	};
-
 	class IPOSTRequestHandler {
 	public:
+		IPOSTRequestHandler() = default;
+
+		IPOSTRequestHandler(const IPOSTRequestHandler &) = delete;
+		IPOSTRequestHandler &operator=(const IPOSTRequestHandler &) = delete;
+		IPOSTRequestHandler(IPOSTRequestHandler &&) = delete;
+		IPOSTRequestHandler &operator=(IPOSTRequestHandler &&) = delete;
+
+		virtual ~IPOSTRequestHandler() = default;
+
 		virtual POSTResult post(std::string path, std::string value) = 0;
+
 	protected:
-		~IPOSTRequestHandler() = default;
 	};
 
 	/*
@@ -148,9 +170,18 @@ namespace http {
 
 	class IPUTRequestHandler {
 	public:
+		IPUTRequestHandler() = default;
+
+		IPUTRequestHandler(const IPUTRequestHandler &) = delete;
+		IPUTRequestHandler &operator=(const IPUTRequestHandler &) = delete;
+		IPUTRequestHandler(IPUTRequestHandler &&) = delete;
+		IPUTRequestHandler &operator=(IPUTRequestHandler &&) = delete;
+
+		virtual ~IPUTRequestHandler() = default;
+
 		virtual PUTResult put(std::string path, std::string value) = 0;
+
 	protected:
-		~IPUTRequestHandler() = default;
 	};
 
 	/*
@@ -189,9 +220,18 @@ namespace http {
 
 	class IDELETERequestHandler {
 	public:
+		IDELETERequestHandler() = default;
+
+		IDELETERequestHandler(const IDELETERequestHandler &) = delete;
+		IDELETERequestHandler &operator=(const IDELETERequestHandler &) = delete;
+		IDELETERequestHandler(IDELETERequestHandler &&) = delete;
+		IDELETERequestHandler &operator=(IDELETERequestHandler &&) = delete;
+
+		virtual ~IDELETERequestHandler() = default;
+	
 		virtual DELETEResult del(std::string path) = 0;
+
 	protected:
-		~IDELETERequestHandler() = default;
 	};
 
 	/*

@@ -19,9 +19,15 @@ namespace utility {
 		explicit parser_error(std::string message, const std::source_location location = std::source_location::current()) : location_(location) {
 			msg_ = std::format("Parser error in {}, line {}, function {}\n {}", location_.file_name(), location_.line(), location_.function_name(), message);
 		}
-		~parser_error() final {}
 
-		const char *what() const noexcept override {
+		parser_error(const parser_error&) = default;
+		parser_error& operator=(const parser_error&) = default;
+		parser_error(parser_error&&) noexcept = default;
+		parser_error& operator=(parser_error&&) noexcept = default;
+
+		~parser_error() final = default;
+
+		[[nodiscard]] const char *what() const noexcept override {
 			return msg_.c_str();
 		}
 
@@ -33,8 +39,8 @@ namespace utility {
 
 	class StringParser {
 	public:
-		explicit StringParser(const std::string& str_in) : str(std::move(str_in)) {}
-		explicit StringParser(std::string&& str_in) : str(str_in) {}
+		explicit StringParser(const std::string& str_in) : str(str_in) {}
+		explicit StringParser(std::string&& str_in) : str(std::move(str_in)) {}
 
 		inline void move(size_t steps) {
 			view.remove_prefix(steps);
@@ -95,7 +101,7 @@ namespace utility {
 
 		template<typename T>
 		inline T process_function_own(std::function<T(std::string_view)> function) {
-			return function(std::move(view));
+			return function(view);
 		}
 
 		constexpr std::string_view next_token(const char delim = ' ') {
@@ -106,16 +112,16 @@ namespace utility {
 			return token;
 		}
 
-		constexpr static std::tuple<std::string_view, std::string_view> next_token(std::string_view sv, const char delim = ' ') {
-			const size_t end = sv.find_first_of(delim);
-			const std::string_view token = sv.substr(0, end);
-			sv.remove_prefix(end);
+		constexpr static std::tuple<std::string_view, std::string_view> next_token(std::string_view view, const char delim = ' ') {
+			const size_t end = view.find_first_of(delim);
+			const std::string_view token = view.substr(0, end);
+			view.remove_prefix(end);
 
-			return std::make_tuple(token, sv);
+			return std::make_tuple(token, view);
 		}
 
 	private:
-		const std::string str;
+		std::string str;
 		std::string_view view {str};
 	};
 }

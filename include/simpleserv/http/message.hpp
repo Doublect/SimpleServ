@@ -6,6 +6,7 @@
 #include <simpleserv/utility/string_parser.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <cstdint>
 #include <functional>
@@ -26,79 +27,72 @@ namespace http {
 		};
 	}
 
-	const inline utility::expected<HTTPMethod, utility::parser_error> method_string_to_enum(utility::StringParser& sp) {
-		switch (sp.head()) {
+	inline utility::expected<HTTPMethod, utility::parser_error> method_string_to_enum(utility::StringParser& parser) {
+		switch (parser.head()) {
 			case 'G':
-				sp.move(1);
-				return transform_fn(HTTPMethod::GET)(sp.expect("ET"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::GET)(parser.expect("ET"));
 
 			case 'P':
-				sp.move(1);
-				if(sp.head() == 'O') {
-					sp.move(1);
-					return transform_fn(HTTPMethod::POST)(sp.expect("ST"));
+				parser.move(1);
+				if(parser.head() == 'O') {
+					parser.move(1);
+					return transform_fn(HTTPMethod::POST)(parser.expect("ST"));
 				} else {
-					return transform_fn(HTTPMethod::PUT)(sp.expect("UT"));
+					return transform_fn(HTTPMethod::PUT)(parser.expect("UT"));
 				}
 
 			case 'D':
-				sp.move(1);
-				return transform_fn(HTTPMethod::DELETE)(sp.expect("ELETE"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::DELETE)(parser.expect("ELETE"));
 
 			case 'H':
-				sp.move(1);
-				return transform_fn(HTTPMethod::HEAD)(sp.expect("EAD"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::HEAD)(parser.expect("EAD"));
 
 			case 'O':
-				sp.move(1);
-				return transform_fn(HTTPMethod::OPTIONS)(sp.expect("PTIONS"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::OPTIONS)(parser.expect("PTIONS"));
 
 			case 'T':
-				sp.move(1);
-				return transform_fn(HTTPMethod::TRACE)(sp.expect("RACE"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::TRACE)(parser.expect("RACE"));
 
 			case 'C':
-				sp.move(1);
-				return transform_fn(HTTPMethod::CONNECT)(sp.expect("ONNECT"));
+				parser.move(1);
+				return transform_fn(HTTPMethod::CONNECT)(parser.expect("ONNECT"));
 
 			default:
 				break;
 		}
 
-		return utility::unexpected(utility::parser_error("Invalid HTTP method string: " + std::string(sp.next_token())));
+		return utility::unexpected(utility::parser_error("Invalid HTTP method string: " + std::string(parser.next_token())));
 	}
 
 	enum HTTPVersion : uint8_t { HTTP_1_0, HTTP_1_1, HTTP_2_0, HTTP_INVALID };
 
-	constexpr const char *HTTP_VERSION_STRINGS[] = {"HTTP/1.0", "HTTP/1.1",
-																							"HTTP/2.0"};
+	constexpr const std::array<const char *, 3> HTTP_VERSION_STRINGS = {"HTTP/1.0", "HTTP/1.1", "HTTP/2.0"};
 
 
-	#define EXPECT_TH(str, char)\
-		if(*str != char || *str == '\0') {\
-			throw std::runtime_error("Invalid HTTP version string");\
-		}\
-		str++;
-
-	constexpr HTTPVersion version_string_to_enum(utility::StringParser& sp) {
-		sp.expect("HTTP/");
-		const char head = sp.head();
+	constexpr HTTPVersion version_string_to_enum(utility::StringParser& parser) {
+		parser.expect("HTTP/");
+		const char head = parser.head();
 		HTTPVersion version = HTTP_INVALID;
 
 		if(head == '2') {
-			sp.move(1);
-			sp.expect(".0");
+			parser.move(1);
+			parser.expect(".0");
 			version = HTTP_2_0;
 		} else {
-			sp.move(1);
-			sp.expect("1.");
-			const char head1 = sp.head();
+			parser.move(1);
+			parser.expect("1.");
+			const char head1 = parser.head();
 			if(head1 == '0') {
-				sp.move(1);
+				parser.move(1);
 				version = HTTP_1_0;
 			} else {
-				sp.move(1);
-				sp.expect("1");
+				parser.move(1);
+				parser.expect("1");
 				version = HTTP_1_1;
 			}
 		}
@@ -108,7 +102,7 @@ namespace http {
 
 	class HTTPMessage {
 	protected:
-		HTTPVersion version_;
+		HTTPVersion version_{HTTP_1_0};
 		std::map<std::string, std::string> headers_;
 		std::string body_;
 
@@ -117,11 +111,11 @@ namespace http {
 		headers_[key] = std::move(value);
 	};
 
-		void SetContent(std::string content) { body_ = content; }
+		void SetContent(std::string content) { body_ = std::move(content); }
 
-		HTTPVersion version() const { return version_; }
-		std::map<std::string, std::string> headers() const { return headers_; }
-		std::string body() const { return body_; }
+		[[nodiscard]] HTTPVersion version() const { return version_; }
+		[[nodiscard]] std::map<std::string, std::string> headers() const { return headers_; }
+		[[nodiscard]] std::string body() const { return body_; }
 	};
 
 	class HTTPRequest : public HTTPMessage {
@@ -130,26 +124,26 @@ namespace http {
 		std::string path_;
 
 	public:
-		HTTPRequest(HTTPMethod method, std::string path, HTTPVersion version) : method_(method), path_(path) {
+		HTTPRequest(HTTPMethod method, std::string path, HTTPVersion version) : method_(method), path_(std::move(path)) {
 			this->version_ = version;
 		}
 
-		inline HTTPMethod method() const { return method_; }
-		inline std::string path() const { return path_; }
+		[[nodiscard]] inline HTTPMethod method() const { return method_; }
+		[[nodiscard]] inline std::string path() const { return path_; }
 
-		friend std::ostream &operator<<(std::ostream &os, const HTTPRequest &request) {
-			os << HTTP_METHOD_STRINGS[request.method()] << " " << request.path() << " "
-				<< HTTP_VERSION_STRINGS[request.version()] << "\r\n";
+		friend std::ostream &operator<<(std::ostream &ostream, const HTTPRequest &request) {
+			ostream << HTTP_METHOD_STRINGS[request.method()] << " " << request.path() << " " 	// NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+				<< HTTP_VERSION_STRINGS[request.version()] << "\r\n";					 									// NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 			for (const auto &header : request.headers()) {
-				os << header.first << ": " << header.second << "\r\n";
+				ostream << header.first << ": " << header.second << "\r\n";
 			}
-			os << "\r\n";
-			os << request.body();
+			ostream << "\r\n";
+			ostream << request.body();
 
-			return os;
+			return ostream;
 		}
 
-		std::string to_string() const {
+		[[nodiscard]] std::string to_string() const {
 			std::ostringstream oss;
 
 			oss << this;
@@ -168,21 +162,21 @@ namespace http {
 			this->body_ = "";
 		}
 
-		HTTPStatusCode status_code() const { return status_code_; }
+		[[nodiscard]] HTTPStatusCode status_code() const { return status_code_; }
 
-		friend std::ostream &operator<<(std::ostream &os, const HTTPResponse &response) {
-			os << HTTP_VERSION_STRINGS[response.version()] << " "
+		friend std::ostream &operator<<(std::ostream &ostream, const HTTPResponse &response) {
+			ostream << HTTP_VERSION_STRINGS[response.version()] << " " // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 					<< status_code_to_string(response.status_code()) << "\r\n";
 			for (const auto &header : response.headers()) {
-				os << header.first << ": " << header.second << "\r\n";
+				ostream << header.first << ": " << header.second << "\r\n";
 			}
-			os << "\r\n";
-			os << response.body();
+			ostream << "\r\n";
+			ostream << response.body();
 
-			return os;
+			return ostream;
 		}
 
-		std::string to_string() const {
+		[[nodiscard]] std::string to_string() const {
 			std::ostringstream oss;
 
 			operator<<(oss, *this);

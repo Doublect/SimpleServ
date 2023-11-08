@@ -6,14 +6,14 @@
 
 namespace request_processing {
 	template <class T, typename ConnectionObject>
-	concept ICloser = requires(T t, ConnectionObject &co) {
-		{ T::CloseConnection(co) } -> std::same_as<void>;
+	concept ICloser = requires(T type, ConnectionObject &conn_obj) {
+		{ T::CloseConnection(conn_obj) } -> std::same_as<void>;
 	};
 
 	template <class T, typename ConnectionObject, unsigned int capacity>
-	concept IConnectionHandler = requires(T t, ConnectionObject co, LockFreeQueue<ConnectionObject, capacity> *queue) {
-		{ t.Start() } -> std::same_as<void>;
-		{ t.handle_connection(co) } -> std::same_as<void>;
+	concept IConnectionHandler = requires(T type, ConnectionObject conn_obj, LockFreeQueue<ConnectionObject, capacity> *queue) {
+		{ type.Start() } -> std::same_as<void>;
+		{ type.handle_connection(conn_obj) } -> std::same_as<void>;
 	};
 } // namespace request_processing
 

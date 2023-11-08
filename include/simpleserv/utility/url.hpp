@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <utility>
 
 namespace utility {
 
@@ -13,17 +14,17 @@ namespace utility {
 		std::map<std::string, std::string> query;
 
 		public:
-			URL(std::string url_path, std::map<std::string, std::string> query_params) : path(url_path), query(query_params) {}
-			~URL() {}
-			std::string GetPath() const {
+			URL(std::string url_path, std::map<std::string, std::string> query_params) : path(std::move(url_path)), query(std::move(query_params)) {}
+
+			[[nodiscard]] std::string GetPath() const {
 				return path;
 			}
 
-			std::map<std::string, std::string> GetQuery() const {
+			[[nodiscard]] std::map<std::string, std::string> GetQuery() const {
 				return query;
 			}
 
-			std::string GetQuery(std::string key) {
+			std::string GetQuery(std::string &key) {
 				return query[key];
 			}
 	};

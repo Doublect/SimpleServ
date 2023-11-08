@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstddef>
 #include <iostream>
 #include <iterator>
 #include <filesystem>
 #include <fstream>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -56,11 +58,11 @@ namespace utility {
 			if(write_to_file(output_path, output_data)) {
 				return output_path;
 			} else {
-				return std::filesystem::path("");
+				return {""};
 			}
 		}
 
-		return std::filesystem::path("");
+		return {""};
 	};
 
 	// std::string GZip::encode(const std::string& path, const std::string& filename) {
@@ -75,19 +77,24 @@ namespace utility {
 	// };
 
 	void FileEncoder::encode_directory(const std::string& path) {
-		const std::filesystem::path dir_path(path);
-		std::cout << "Encoding directory: " << dir_path << "\n";
-		for (auto const& dir_entry : std::filesystem::directory_iterator{dir_path}) {
-			if(dir_entry.is_directory()) {
-				encode_directory(dir_entry.path().string());
-			} else {
-				const std::string filename = dir_entry.path().filename().string();
-				const std::string extension = dir_entry.path().extension().string();
-				std::cout << "Encoding file: " << filename << "\n";
+		std::stack<std::filesystem::path> directories {{std::filesystem::path{path}}};
 
-				if(extension == ".html" || extension == ".css" || extension == ".js") {
-					const Brotli brotli;
-					brotli.encode(std::filesystem::path(path) /= filename);
+		while(!directories.empty()) {
+			const std::filesystem::path current_directory = directories.top();
+			directories.pop();
+			std::cout << "Encoding directory: " << current_directory << "\n";
+			for (auto const& dir_entry : std::filesystem::directory_iterator{current_directory}) {
+				if(dir_entry.is_directory()) {
+					directories.push(dir_entry.path());
+				} else {
+					const std::string filename = dir_entry.path().filename().string();
+					const std::string extension = dir_entry.path().extension().string();
+					std::cout << "Encoding file: " << filename << "\n";
+
+					if(extension == ".html" || extension == ".css" || extension == ".js") {
+						const Brotli brotli;
+						brotli.encode(std::filesystem::path(current_directory) /= filename);
+					}
 				}
 			}
 		}

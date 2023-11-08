@@ -2,6 +2,7 @@
 #define WEBSERVER_LOCK_FREE_QUEUE_HPP
 
 #include <atomic>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -14,29 +15,29 @@
 // TODO(Hunor): Investigate whether the small integer optimisations are worthwhile
 
 #define ENABLE_SMALL_INTEGER_OPTIMISATIONS
-#define SMALL_INTEGER_OPTIMISATION_LIMIT 100
+
+constexpr size_t SMALL_INTEGER_OPTIMISATION_LIMIT = 100; 
 
 template <typename T, uint32_t capacity>
 class LockFreeQueue {
 private:
-	T arr_[capacity];
+	std::array<T, capacity> arr_;
 	std::atomic<uint32_t> head_;
 	std::atomic<uint32_t> tail_;
 	std::atomic<uint32_t> size_;
 
+// TODO: test efficacy of this optimisation
 #ifdef ENABLE_SMALL_INTEGER_OPTIMISATIONS
-	using next_array = typename std::conditional<capacity <= SMALL_INTEGER_OPTIMISATION_LIMIT, uint32_t[capacity], void>::type;
+	using next_array = std::conditional_t<capacity <= SMALL_INTEGER_OPTIMISATION_LIMIT, std::array<uint32_t, capacity>, void>;
 
 	next_array next_arr;
 #endif
 
 public:
-	const int capacity_ = capacity;
-
 	LockFreeQueue() {
 		#ifdef ENABLE_SMALL_INTEGER_OPTIMISATIONS
 		if constexpr (capacity <= SMALL_INTEGER_OPTIMISATION_LIMIT) {
-			for(int i = 0; i < capacity; i++) {
+			for(uint32_t i = 0; i < capacity; i++) {
 				next_arr[i] = i + 1;
 			}
 			next_arr[capacity - 1] = 0;
@@ -49,24 +50,24 @@ public:
 	LockFreeQueue(LockFreeQueue&) = delete;
 	LockFreeQueue& operator=(LockFreeQueue&) = delete;
 
-	~LockFreeQueue() {};
+	~LockFreeQueue() = default;
 
-	bool push(T&& t) {
+	bool push(T&& elem) {
 		uint32_t tail = tail_.load(std::memory_order_acquire);
 		uint32_t next_tail = next(tail);
 
-		arr_[tail] = std::move(t);
+		arr_[tail] = std::move(elem);
 		tail_.store(next_tail, std::memory_order_release);
 		size_.fetch_add(1, std::memory_order_release);
 
 		return true;
 	}
 
-	bool push(const T& t) {
-		uint32_t tail = tail_.load(std::memory_order_acquire);
-		uint32_t next_tail = next(tail);
+	bool push(const T& elem) {
+		const uint32_t tail = tail_.load(std::memory_order_acquire);
+		const uint32_t next_tail = next(tail);
 
-		arr_[tail] = t;
+		arr_[tail] = elem;
 		tail_.store(next_tail, std::memory_order_release);
 		size_.fetch_add(1, std::memory_order_release);
 
@@ -92,11 +93,11 @@ public:
 		return result;
 	}
 
-	bool empty() const {
+	[[nodiscard]] bool empty() const {
 		return head_.load(std::memory_order_acquire) == tail_.load(std::memory_order_acquire);
 	}
 
-	bool full() const {
+	[[nodiscard]] bool full() const {
 		uint32_t tail = tail_.load(std::memory_order_acquire);
 		return next(tail) == head_.load(std::memory_order_acquire);
 	}
@@ -106,7 +107,7 @@ public:
 	}
 
 private:
-	constexpr uint32_t next(uint32_t current) const {
+	[[nodiscard]] constexpr uint32_t next(uint32_t current) const {
 		#ifdef ENABLE_SMALL_INTEGER_OPTIMISATIONS
 		if constexpr (capacity < SMALL_INTEGER_OPTIMISATION_LIMIT) {
 			return next_arr[current];

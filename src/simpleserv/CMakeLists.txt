@@ -2,10 +2,11 @@ include(GenerateExportHeader)
 
 add_library(simpleserv STATIC
 	http/parser.cpp
+	http/http_handler.cpp
 	http/request_handler.cpp 
 	utility/url.cpp 
 	utility/content_coding.cpp 
-	file_manager.cpp
+	utility/file_manager.cpp
 )
 
 add_library(simpleserv::simpleserv ALIAS simpleserv)

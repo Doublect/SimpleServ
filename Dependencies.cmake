@@ -38,7 +38,7 @@ function(simpleserv_setup_dependencies)
 		set(Boost_USE_STATIC_LIBS OFF) 
 		set(Boost_USE_MULTITHREADED ON)  
 		set(Boost_USE_STATIC_RUNTIME OFF) 
-		#find_package(Boost 1.83 COMPONENTS asio)
+		find_package(Boost 1.83.0 COMPONENTS log log_setup)
 
 		if(Boost_FOUND)
 				include_directories(${Boost_INCLUDE_DIRS}) 

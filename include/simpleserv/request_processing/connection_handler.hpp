@@ -23,12 +23,14 @@ namespace request_processing {
 
 	public:
 		ThreadpoolConnectionHandler() : ready(false) {}
-		ThreadpoolConnectionHandler(LockFreeQueue<ConnectionObject, 100> *queue) : _queue(queue), ready(true) {}
+		explicit ThreadpoolConnectionHandler(LockFreeQueue<ConnectionObject, 100> *queue) : _queue(queue), ready(true) {}
 
+		ThreadpoolConnectionHandler(const ThreadpoolConnectionHandler&) = default;
+		ThreadpoolConnectionHandler& operator=(const ThreadpoolConnectionHandler&) = default;
 		ThreadpoolConnectionHandler(ThreadpoolConnectionHandler&&) = default;
 		ThreadpoolConnectionHandler& operator=(ThreadpoolConnectionHandler&&) = default;
-		ThreadpoolConnectionHandler(ThreadpoolConnectionHandler&) = default;
-		ThreadpoolConnectionHandler& operator=(ThreadpoolConnectionHandler&) = default;
+
+		~ThreadpoolConnectionHandler() = default;
 
 		void Start() {
 			assert(_queue != nullptr && "Threadpool worker lacks a job queue.");
@@ -37,7 +39,7 @@ namespace request_processing {
 				throw std::runtime_error("Threadpool worker lacks a job queue to take jobs from.");
 			}
 
-			if constexpr (_debug && (_debug_threadpool_worker)) {
+			if constexpr (ss_debug && (ss_debug_threadpool_worker)) {
 				std::cout << "Starting threadpool connection handler...\n";
 			}
 			while (true) {
@@ -48,17 +50,17 @@ namespace request_processing {
 			}
 		}
 
-		void handle_connection(ConnectionObject co) {
-				if constexpr (_debug && (_debug_threadpool_worker)) {
-					std::cout << "Received HTTP request: " << co.request.length() << " on thread: " << std::this_thread::get_id() << "\n";
+		void handle_connection(ConnectionObject conn_obj) {
+				if constexpr (ss_debug && (ss_debug_threadpool_worker)) {
+					std::cout << "Received HTTP request: " << conn_obj.request.length() << " on thread: " << std::this_thread::get_id() << "\n";
 				}
-				auto response = Handler::handle(co.request);
+				auto response = Handler::handle(conn_obj.request);
 				
 				if (response.has_value()) {
-					Sender::SendMsg(co, response.value());
+					Sender::SendMsg(conn_obj, response.value());
 				}
 
-				Closer::CloseConnection(co);
+				Closer::CloseConnection(conn_obj);
 		}
 	};
 }; // namespace request_processing

@@ -12,15 +12,15 @@ namespace request_processing {
 	class Threadpool {
 	private:
 		LockFreeQueue<ConnectionObject, 100> _queue;
-		std::thread _threads[num_threads];
-		C _handlers[num_threads];
+		std::array<std::thread, num_threads> _threads;
+		std::array<C, num_threads> _handlers;
 
 	public:
 		Threadpool() : _queue(LockFreeQueue<ConnectionObject, 100>()) {
 			for (unsigned int i = 0; i < num_threads; i++) {
-				_handlers[i] = std::move(C(&_queue));
+				_handlers.at(i) = std::move(C(&_queue));
 
-				_threads[i] = std::thread(&C::Start, &_handlers[i]);
+				_threads.at(i) = std::thread(&C::Start, &_handlers.at(i));
 			}
 		}
 

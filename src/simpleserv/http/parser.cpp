@@ -1,56 +1,56 @@
 #include <simpleserv/http/parser.hpp>
+
 #include <simpleserv/utility/expected.hpp>
-#include <simpleserv/utility/logger.hpp>
 #include <simpleserv/utility/string_parser.hpp>
 #include <simpleserv/http/message.hpp>
 
 #include <cstring>
-#include <iostream>
+#include <format>
+#include <optional>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <unordered_set>
 #include <vector>
 
 namespace http {
 
-	#define ASCII_HT 9
-	#define ASCII_VT 11
+	constexpr char ASCII_HT = 9;
+	// constexpr char ASCII_VT = 11;
 
-	const std::unordered_set<std::string> methods = {
+	const std::unordered_set<std::string> methods = { // NOLINT(cert-err58-cpp)
 			"OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"};
 
 	inline utility::expected<HTTPRequest, utility::parser_error>
-	parse_request_line(utility::StringParser& sp) {
-		const auto method_res = method_string_to_enum(sp);
+	parse_request_line(utility::StringParser& parser) {
+		const auto method_res = method_string_to_enum(parser);
 		if(!method_res.has_value()) {
 			return utility::unexpected(method_res.error());
 		}
 
-		auto space_res = sp.expect_two(ASCII_HT, ' ');
+		auto space_res = parser.expect_two(ASCII_HT, ' ');
 		if(space_res.has_value()) {
 			return utility::unexpected(space_res.value());
 			
 		}
-		sp.consume_all_two(ASCII_HT, ' ');
+		parser.consume_all_two(ASCII_HT, ' ');
 
 		// TODO(Hunor): support any whitespace
-		const std::string_view url = sp.next_token(' ');
+		const std::string_view url = parser.next_token(' ');
 
-		space_res = sp.expect_two(ASCII_HT, ' ');
+		space_res = parser.expect_two(ASCII_HT, ' ');
 		if(space_res.has_value()) {
 			return utility::unexpected(space_res.value());
 			
 		}
-		sp.consume_all_two(ASCII_HT, ' ');
+		parser.consume_all_two(ASCII_HT, ' ');
 
-		const HTTPVersion version = version_string_to_enum(sp);
+		const HTTPVersion version = version_string_to_enum(parser);
 
 		if(version == HTTPVersion::HTTP_INVALID) {
 			return utility::unexpected(utility::parser_error());
 		}
 
-		const auto end_res = sp.expect("\r\n");
+		const auto end_res = parser.expect("\r\n");
 		if(end_res.has_value()) {
 			return utility::unexpected(end_res.value());
 		}
@@ -70,8 +70,8 @@ namespace http {
 		return Header{field_name, field_value};
 	}
 
-	std::string to_string(std::string_view sv) {
-		return std::string(sv);
+	std::string to_string(std::string_view view) {
+		return std::string(view);
 	}
 
 	utility::expected<
@@ -101,10 +101,10 @@ namespace http {
 		return headers;
 	}
 
-	utility::expected<HTTPRequest, utility::parser_error> parse_http_request(const std::string str) {
-		utility::StringParser sp(str);
+	utility::expected<HTTPRequest, utility::parser_error> parse_http_request(const std::string& str) {
+		utility::StringParser parser(str);
 
-		auto result = parse_request_line(sp);
+		auto result = parse_request_line(parser);
 
 		if (!result.has_value()) {
 			return result;
@@ -112,7 +112,7 @@ namespace http {
 
 		auto request = result.value();
 
-		auto headers_result = sp.process_function<utility::expected<std::vector<Header>, utility::parser_error>>(parse_message_headers);
+		auto headers_result = parser.process_function<utility::expected<std::vector<Header>, utility::parser_error>>(parse_message_headers);
 
 		if (!headers_result.has_value()) {
 			return utility::unexpected(headers_result.error());
@@ -123,7 +123,7 @@ namespace http {
 		for (auto &[key, value] : headers) {
 			request.SetHeader(std::string(key), std::string(value));
 		}
-		request.SetContent(sp.process_function_own<std::string>([] (std::string_view strv) {return std::string(strv); }));
+		request.SetContent(parser.process_function_own<std::string>([] (std::string_view strv) {return std::string(strv); }));
 
 		return request;
 	}

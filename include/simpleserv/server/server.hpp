@@ -6,14 +6,26 @@
 namespace server {
 	class Server {
 	public:
+		Server() = delete;
+
+		Server(const Server&) = delete;
+		Server& operator=(const Server&) = delete;
+		Server(Server&&) = delete;
+		Server& operator=(Server&&) = delete;
+
+
+		virtual ~Server() = default;
+
 		virtual void Start() = 0;
 		virtual void Stop() = 0;
 		virtual void Open(std::stop_token stoken) = 0;
 
-		int port_() const { return _port; }
+		[[nodiscard]] uint32_t port_() const { return _port; }
 
 	protected:
-		int _port;
+		explicit Server(uint32_t port) : _port(port) {}
+
+		uint32_t _port;
 	};
 
 	enum class ServerType {

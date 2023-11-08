@@ -16,7 +16,7 @@ namespace http {
 		GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT 
 	};
 
-	constexpr const char *HTTP_METHOD_STRINGS[] = {
+	constexpr std::array<const char *, 8> HTTP_METHOD_STRINGS = {
 			"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
 
 	enum HTTPStatusCode {
@@ -38,10 +38,10 @@ namespace http {
 		INTERNAL_SERVER_ERROR = 500,
 		NOT_IMPLEMENTED = 501,
 		BAD_GATEWAY = 502,
-		SERVICE_UNAVAILABLE = 503
+		SERVICE_UNAVAILABLE = 503,
 	};
 
-	static std::string HTTP_RESPONSE_STATUS[] = {
+	const std::array<std::string, 17> HTTP_RESPONSE_STATUS = { // NOLINT(cert-err58-cpp)
 		"100 Continue",
 		"101 Switching Protocols",
 		"200 OK",
@@ -58,7 +58,7 @@ namespace http {
 		"500 Internal Server Error",
 		"501 Not Implemented",
 		"502 Bad Gateway",
-		"503 Service Unavailable"
+		"503 Service Unavailable",
 	};
 
 	inline std::string status_code_to_string(const HTTPStatusCode &status_code) {

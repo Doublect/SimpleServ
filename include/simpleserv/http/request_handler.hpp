@@ -4,6 +4,8 @@
 #include <simpleserv/http/message.hpp>
 
 #include <cstdint>
+#include <optional>
+#include <string>
 
 namespace http {
 
@@ -18,7 +20,7 @@ namespace http {
 		std::string body;
 	};
 
-	typedef std::optional<std::string> GETCondition;
+	using GETCondition = std::optional<std::string>;
 
 	struct GETConditionals {
 		GETCondition modified_since;
@@ -30,14 +32,14 @@ namespace http {
 	class IGETRequestHandler;
 
 	template <typename T>
-	concept GETRequestHandler = std::is_base_of<IGETRequestHandler, T>::value;
+	concept GETRequestHandler = std::is_base_of_v<IGETRequestHandler, T>;
 
 	// HEAD request handling
 
 	class IHEADRequestHandler;
 
 	template <typename T>
-	concept HEADRequestHandler = std::is_base_of<IHEADRequestHandler, T>::value;
+	concept HEADRequestHandler = std::is_base_of_v<IHEADRequestHandler, T>;
 
 	template <HEADRequestHandler T>
 	HTTPResponse head_request(const HTTPRequest& request);
@@ -45,12 +47,15 @@ namespace http {
 	// POST request handling
 	enum class POSTResultState : uint8_t { OK, CREATED, NO_CONTENT, SEE_OTHER, ERROR };
 
-	struct POSTResult;
+	struct POSTResult {
+		POSTResultState state;
+		std::string body;
+	};
 
 	class IPOSTRequestHandler;
 
 	template <typename T>
-	concept POSTRequestHandler = std::is_base_of<IPOSTRequestHandler, T>::value;
+	concept POSTRequestHandler = std::is_base_of_v<IPOSTRequestHandler, T>;
 
 	// PUT request handling
 
@@ -59,7 +64,7 @@ namespace http {
 	class IPUTRequestHandler;
 
 	template <typename T>
-	concept PUTRequestHandler = std::is_base_of<IPUTRequestHandler, T>::value;
+	concept PUTRequestHandler = std::is_base_of_v<IPUTRequestHandler, T>;
 
 	template <PUTRequestHandler T>
 	HTTPResponse put_request(const HTTPRequest& request);
@@ -71,7 +76,7 @@ namespace http {
 	class IDELETERequestHandler;
 
 	template <typename T>
-	concept DELETERequestHandler = std::is_base_of<IDELETERequestHandler, T>::value;
+	concept DELETERequestHandler = std::is_base_of_v<IDELETERequestHandler, T>;
 
 	template <DELETERequestHandler T>
 	HTTPResponse delete_request(const HTTPResponse& response);
