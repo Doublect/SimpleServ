@@ -66,6 +66,9 @@ namespace http {
 			return utility::unexpected(utility::parser_error{std::format("Expected header field name to end with ':', got: {} ({})", field_name.back(), static_cast<int>(field_name.back()))});
 		}
 		field_name.remove_suffix(1);
+
+		// Remove leading whitespace
+		field_value.remove_prefix(1);
 	
 		return Header{field_name, field_value};
 	}
@@ -98,6 +101,7 @@ namespace http {
 		// Guaranteed to be \r\n by while condition
 		str_view.remove_prefix(2);
 
+		str = str_view;
 		return headers;
 	}
 
