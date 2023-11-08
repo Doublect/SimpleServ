@@ -1,5 +1,7 @@
 # SimpleServ - Simple HTTPS server
 
+This project is heavily work-in-progress. The goal is to create a simple and fast HTTPS server.
+
 # Building SimpleServ
 
 ## Prerequisites
